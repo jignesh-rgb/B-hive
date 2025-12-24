@@ -1,0 +1,270 @@
+const express = require("express");
+console.log('Express loaded');
+const path = require('path');
+// Load env from server/.env then fallback to project root .env
+require('dotenv').config({ path: path.join(__dirname, '.env') });
+require('dotenv').config({ path: path.join(__dirname, '..', '.env') });
+console.log('Environment loaded');
+const bcrypt = require('bcryptjs');
+console.log('bcrypt loaded');
+const fileUpload = require("express-fileupload");
+console.log('fileUpload loaded');
+const productsRouter = require("./routes/products");
+console.log('productsRouter loaded');
+const productImagesRouter = require("./routes/productImages");
+console.log('productImagesRouter loaded');
+const categoryRouter = require("./routes/category");
+console.log('categoryRouter loaded');
+const searchRouter = require("./routes/search");
+console.log('searchRouter loaded');
+const mainImageRouter = require("./routes/mainImages");
+console.log('mainImageRouter loaded');
+const userRouter = require("./routes/users");
+console.log('userRouter loaded');
+const orderRouter = require("./routes/customer_orders");
+console.log('orderRouter loaded');
+const slugRouter = require("./routes/slugs");
+console.log('slugRouter loaded');
+const orderProductRouter = require('./routes/customer_order_product');
+console.log('orderProductRouter loaded');
+// const wishlistRouter = require('./routes/wishlist');
+const notificationsRouter = require('./routes/notifications');
+console.log('notificationsRouter loaded');
+const merchantRouter = require('./routes/merchant'); // Add this line
+console.log('merchantRouter loaded');
+const bulkUploadRouter = require('./routes/bulkUpload');
+console.log('bulkUploadRouter loaded');
+var cors = require("cors");
+console.log('cors loaded');
+
+// Import logging middleware
+const { 
+  addRequestId, 
+  requestLogger, 
+  errorLogger, 
+  securityLogger 
+} = require('./middleware/requestLogger');
+console.log('Logging middleware loaded');
+
+// Import rate limiting middleware
+const {
+  generalLimiter,
+  authLimiter,
+  registerLimiter,
+  userManagementLimiter,
+  uploadLimiter,
+  searchLimiter,
+  orderLimiter
+} = require('./middleware/rateLimiter');
+console.log('Rate limiting middleware loaded');
+
+const {
+  handleServerError
+} = require('./utills/errorHandler');
+console.log('Error handler loaded');
+
+const app = express();
+console.log('Express app created');
+
+// Trust proxy for accurate IP addresses
+app.set('trust proxy', 1);
+
+// Add request ID to all requests
+// app.use(addRequestId);
+console.log('Request ID middleware DISABLED for testing');
+
+// Security logging (check for suspicious patterns)
+// app.use(securityLogger);
+console.log('Security logging middleware DISABLED for testing');
+
+// Standard request logging
+// app.use(requestLogger);
+console.log('Request logging middleware DISABLED for testing');
+
+// Error logging (only logs 4xx and 5xx responses)
+// app.use(errorLogger);
+console.log('Error logging middleware DISABLED for testing');
+
+const allowedOrigins = [
+  'http://localhost:3000',
+  'http://localhost:3001',
+  process.env.NEXTAUTH_URL,
+  process.env.FRONTEND_URL,
+].filter(Boolean); // Remove undefined values
+console.log('Allowed origins:', allowedOrigins);
+
+// CORS configuration with origin validation
+const corsOptions = {
+  origin: function (origin, callback) {
+
+    if (!origin) return callback(null, true);
+    
+
+    if (allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    }
+    
+
+    if (process.env.NODE_ENV === 'development' && origin.startsWith('http://localhost:')) {
+      return callback(null, true);
+    }
+    
+    // Reject other origins
+    const msg = 'The CORS policy for this site does not allow access from the specified Origin.';
+    return callback(new Error(msg), false);
+  },
+  methods: ["GET", "POST", "PUT", "DELETE"],
+  allowedHeaders: ["Content-Type", "Authorization"],
+  credentials: true, // Allow cookies and authorization headers
+};
+console.log('CORS options configured');
+
+// Apply general rate limiting to all routes
+// app.use(generalLimiter);
+console.log('General rate limiter DISABLED for testing');
+
+// app.use(express.json());
+console.log('JSON parser middleware DISABLED for testing');
+// app.use(cors(corsOptions));
+console.log('CORS middleware DISABLED for testing');
+// app.use(fileUpload());
+console.log('File upload middleware DISABLED for testing');
+
+// Apply specific rate limiters to different route groups
+// app.use("/api/users", userManagementLimiter);
+console.log('User management rate limiter DISABLED for testing');
+// app.use("/api/search", searchLimiter);
+console.log('Search rate limiter DISABLED for testing');
+// app.use("/api/orders", orderLimiter);
+console.log('Orders rate limiter DISABLED for testing');
+// app.use("/api/order-product", orderLimiter);
+console.log('Order product rate limiter DISABLED for testing');
+// app.use("/api/images", uploadLimiter);
+console.log('Images upload limiter DISABLED for testing');
+// app.use("/api/main-image", uploadLimiter);
+console.log('Main image upload limiter DISABLED for testing');
+// app.use("/api/merchants", (req, res, next) => next()); // Temporarily bypass rate limiting for merchants
+console.log('Merchants rate limiter DISABLED for testing');
+// app.use("/api/bulk-upload", uploadLimiter);
+console.log('Bulk upload limiter DISABLED for testing');
+
+// Apply stricter rate limiting to authentication-related routes
+// app.use("/api/users/email", authLimiter); // For login attempts via email lookup 
+console.log('Auth limiter DISABLED for testing');
+
+// Apply admin rate limiting to admin routes
+
+
+// app.use("/api/products", productsRouter);
+// console.log('Products router added');
+// app.use("/api/categories", categoryRouter);
+// console.log('Categories router added');
+// app.use("/api/images", productImagesRouter);
+// console.log('Product images router added');
+// app.use("/api/main-image", mainImageRouter);
+// console.log('Main image router added');
+// app.use("/api/users", userRouter);
+// console.log('Users router added');
+// app.use("/api/search", searchRouter);
+// console.log('Search router added');
+// app.use("/api/orders", orderRouter);
+// console.log('Orders router added');
+// app.use('/api/order-product', orderProductRouter);
+// console.log('Order product router added');
+// app.use("/api/slugs", slugRouter);
+// console.log('Slugs router added');
+// app.use("/api/notifications", notificationsRouter);
+// console.log('Notifications router added');
+// app.use("/api/merchants", merchantRouter); 
+// console.log('Merchants router added');
+// app.use("/api/bulk-upload", bulkUploadRouter);
+// console.log('Bulk upload router added');
+
+// Add a simple test route
+app.get('/test', (req, res) => {
+  console.log('Test route called');
+  res.json({ message: 'Test route works' });
+});
+console.log('Test route added');
+
+// Health check endpoint (no rate limiting)
+app.get('/health', (req, res) => {
+  res.status(200).json({ 
+    status: 'OK', 
+    timestamp: new Date().toISOString(),
+    rateLimiting: 'enabled',
+    requestId: req.reqId
+  });
+});
+
+// Rate limit info endpoint
+app.get('/rate-limit-info', (req, res) => {
+  res.status(200).json({
+    general: '100 requests per 15 minutes',
+    auth: '5 login attempts per 15 minutes',
+    register: '3 registrations per hour',
+    upload: '10 uploads per 15 minutes',
+    search: '30 searches per minute',
+    orders: '15 order operations per 15 minutes',
+    wishlist: '20 operations per 5 minutes',
+    products: '60 requests per minute',
+    requestId: req.reqId
+  });
+});
+
+// 404 handler
+app.use('*', (req, res) => {
+  res.status(404).json({
+    error: 'Route not found',
+    requestId: req.reqId
+  });
+});
+
+// Global error handler
+app.use((err, req, res, next) => {
+  handleServerError(err, res, `${req.method} ${req.path}`);
+});
+
+const PORT = process.env.PORT || 5001;
+
+// Global error handlers to prevent server crashes
+process.on('uncaughtException', (err) => {
+  console.error('Uncaught Exception:', err);
+  console.error('Stack:', err.stack);
+  // Don't exit the process in production, just log the error
+  if (process.env.NODE_ENV !== 'production') {
+    process.exit(1);
+  }
+});
+
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('Unhandled Rejection at:', promise, 'reason:', reason);
+  // Don't exit the process in production, just log the error
+  if (process.env.NODE_ENV !== 'production') {
+    process.exit(1);
+  }
+});
+
+// Connect to MongoDB
+const { connectDB } = require('./utills/db');
+connectDB().then(() => {
+  console.log('Starting HTTP server...');
+  const server = app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+    console.log('Rate limiting and request logging enabled for all endpoints');
+    console.log('Logs are being written to server/logs/ directory');
+  });
+
+  server.on('error', (err) => {
+    console.error('Server error:', err);
+  });
+
+  server.on('listening', () => {
+    console.log('Server is now listening on port', PORT);
+  });
+}).catch((err) => {
+  console.error('Failed to connect to MongoDB:', err);
+  process.exit(1);
+});
+
+module.exports = app;
