@@ -26,20 +26,14 @@ const DashboardSingleUserPage = ({ params }: DashboardUserDetailsProps) => {
   const router = useRouter();
 
   const deleteUser = async () => {
-    const requestOptions = {
-      method: "DELETE",
-    };
     apiClient
-      .delete(`/api/users/${id}`, requestOptions)
-      .then((response) => {
-        if (response.status === 204) {
-          toast.success("User deleted successfully");
-          router.push("/admin/users");
-        } else {
-          throw Error("There was an error while deleting user");
-        }
+      .delete(`/api/users/${id}`)
+      .then(() => {
+        toast.success("User deleted successfully");
+        router.push("/admin/users");
       })
       .catch((error) => {
+        console.error("Error deleting user:", error);
         toast.error("There was an error while deleting user");
       });
   };
@@ -57,22 +51,15 @@ const DashboardSingleUserPage = ({ params }: DashboardUserDetailsProps) => {
 
       if (userInput.newPassword.length > 7) {
         try {
-          const response = await apiClient.put(`/api/users/${id}`, {
+          await apiClient.put(`/api/users/${id}`, {
             email: userInput.email,
             password: userInput.newPassword,
             role: userInput.role,
           });
-
-          if (response.status === 200) {
-            await response.json();
-            toast.success("User successfully updated");
-          } else {
-            const errorData = await response.json();
-            toast.error(errorData.error || "Error while updating user");
-          }
+          toast.success("User successfully updated");
         } catch (error) {
           console.error("Error updating user:", error);
-          toast.error("There was an error while updating user");
+          toast.error(error.response?.data?.error || "There was an error while updating user");
         }
       } else {
         toast.error("Password must be longer than 7 characters");
@@ -88,15 +75,16 @@ const DashboardSingleUserPage = ({ params }: DashboardUserDetailsProps) => {
     // sending API request for a single user
     apiClient
       .get(`/api/users/${id}`)
-      .then((res) => {
-        return res.json();
-      })
-      .then((data) => {
+      .then((response) => {
         setUserInput({
-          email: data?.email,
+          email: response.data?.email,
           newPassword: "",
-          role: data?.role,
+          role: response.data?.role,
         });
+      })
+      .catch((error) => {
+        console.error("Error fetching user:", error);
+        toast.error("Failed to load user details");
       });
   }, [id]);
 

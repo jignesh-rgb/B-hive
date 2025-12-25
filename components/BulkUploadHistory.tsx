@@ -11,6 +11,7 @@
 "use client";
 import React, { useEffect, useState } from "react";
 import toast from "react-hot-toast";
+import apiClient from "@/lib/api";
 import {
   FaCheckCircle,
   FaTimesCircle,
@@ -51,14 +52,9 @@ const BulkUploadHistory = () => {
   const fetchBatchHistory = async () => {
     try {
       setLoading(true);
-      const response = await fetch("http://localhost:3001/api/bulk-upload");
+      const response = await apiClient.get("/api/bulk-upload");
 
-      if (response.ok) {
-        const data = await response.json();
-        setBatches(data.batches || []);
-      } else {
-        setError("Failed to load batch history");
-      }
+      setBatches(response.data.batches || []);
     } catch (err) {
       console.error("Error fetching batch history:", err);
       setError("Network error occurred");
@@ -80,44 +76,18 @@ const BulkUploadHistory = () => {
     setShowDeleteModal(false);
 
     try {
-      const response = await fetch(
-        `http://localhost:3001/api/bulk-upload/${batchToDelete.id}?deleteProducts=${deleteProducts}`,
-        {
-          method: "DELETE",
-        }
+      await apiClient.delete(`/api/bulk-upload/${batchToDelete.id}?deleteProducts=${deleteProducts}`);
+
+      toast.success(
+        deleteProducts
+          ? "Batch and products deleted successfully!"
+          : "Batch deleted successfully (products kept)"
       );
-
-      // Check if response has content before parsing JSON
-      let data = null;
-      const contentType = response.headers.get("content-type");
-
-      if (contentType && contentType.includes("application/json")) {
-        const text = await response.text();
-        if (text) {
-          try {
-            data = JSON.parse(text);
-          } catch (e) {
-            console.error("Failed to parse JSON:", text);
-          }
-        }
-      }
-
-      if (response.ok) {
-        toast.success(
-          deleteProducts
-            ? "Batch and products deleted successfully!"
-            : "Batch deleted successfully (products kept)"
-        );
-        // Refresh list
-        await fetchBatchHistory();
-      } else {
-        toast.error(
-          data?.error || `Failed to delete batch (${response.status})`
-        );
-      }
-    } catch (err) {
+      // Refresh list
+      await fetchBatchHistory();
+    } catch (err: any) {
       console.error("Error deleting batch:", err);
-      toast.error("Network error occurred");
+      toast.error(err.response?.data?.error || "Network error occurred");
     } finally {
       setDeletingBatchId(null);
       setBatchToDelete(null);

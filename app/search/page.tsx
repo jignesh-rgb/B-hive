@@ -13,17 +13,11 @@ const SearchPage = async ({ searchParams }: Props) => {
   let products = [];
 
   try {
-    const data = await apiClient.get(
+    const response = await apiClient.get(
       `/api/search?query=${sp?.search || ""}`
     );
 
-    if (!data.ok) {
-      console.error('Failed to fetch search results:', data.statusText);
-      products = [];
-    } else {
-      const result = await data.json();
-      products = Array.isArray(result) ? result : [];
-    }
+    products = Array.isArray(response.data) ? response.data : [];
   } catch (error) {
     console.error('Error fetching search results:', error);
     products = [];

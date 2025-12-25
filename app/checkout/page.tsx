@@ -133,13 +133,9 @@ const CheckoutPage = () => {
         try {
           console.log("🔍 Getting user ID for logged-in user:", session.user.email);
           const userResponse = await apiClient.get(`/api/users/email/${session.user.email}`);
-          if (userResponse.ok) {
-            const userData = await userResponse.json();
-            userId = userData.id;
-            console.log("✅ Found user ID:", userId);
-          } else {
-            console.log("❌ Could not find user with email:", session.user.email);
-          }
+          const userData = userResponse.data;
+          userId = userData.id;
+          console.log("✅ Found user ID:", userId);
         } catch (userError) {
           console.log("⚠️  Error getting user ID:", userError);
         }
@@ -168,48 +164,7 @@ const CheckoutPage = () => {
       // Send order data to server for validation and processing
       const response = await apiClient.post("/api/orders", orderData);
 
-      console.log("📡 API Response received:");
-      console.log("  Status:", response.status);
-      console.log("  Status Text:", response.statusText);
-      console.log("  Response OK:", response.ok);
-      
-      // Check if response is ok before parsing
-      if (!response.ok) {
-        console.error("❌ Response not OK:", response.status, response.statusText);
-        const errorText = await response.text();
-        console.error("Error response body:", errorText);
-        
-        // Try to parse as JSON to get detailed error info
-        try {
-          const errorData = JSON.parse(errorText);
-          console.error("Parsed error data:", errorData);
-          
-          // Handle different error types
-          if (response.status === 409) {
-            // Duplicate order error
-            toast.error(errorData.details || errorData.error || "Duplicate order detected");
-            return; // Don't throw, just return to stop execution
-          } else if (errorData.details && Array.isArray(errorData.details)) {
-            // Validation errors
-            errorData.details.forEach((detail: any) => {
-              toast.error(`${detail.field}: ${detail.message}`);
-            });
-          } else if (typeof errorData.details === 'string') {
-            // Single error message in details
-            toast.error(errorData.details);
-          } else {
-            // Fallback error message
-            toast.error(errorData.error || "Order creation failed");
-          }
-        } catch (parseError) {
-          console.error("Could not parse error as JSON:", parseError);
-          toast.error("Order creation failed. Please try again.");
-        }
-        
-        return; // Stop execution instead of throwing
-      }
-
-      const data = await response.json();
+      const data = response.data;
       console.log("✅ Parsed response data:", data);
       
       const orderId: string = data.id;
@@ -272,7 +227,7 @@ const CheckoutPage = () => {
       if (error.response?.status === 400) {
         console.log(" Handling 400 error...");
         try {
-          const errorData = await error.response.json();
+          const errorData = error.response.data;
           console.log("Error data:", errorData);
           if (errorData.details && Array.isArray(errorData.details)) {
             // Show specific validation errors
@@ -315,15 +270,7 @@ const CheckoutPage = () => {
         quantity: productQuantity,
       });
 
-      console.log("📡 Product order response:", response);
-      
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error("❌ Product order failed:", response.status, errorText);
-        throw new Error(`Product order failed: ${response.status}`);
-      }
-
-      const data = await response.json();
+      const data = response.data;
       console.log("✅ Product order successful:", data);
       
     } catch (error) {

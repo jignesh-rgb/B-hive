@@ -5,6 +5,7 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
 import toast from "react-hot-toast";
+import axios from "axios";
 
 const RegisterPage = () => {
   const [error, setError] = useState("");
@@ -49,43 +50,30 @@ const RegisterPage = () => {
 
     try {
       // sending API request for registering user
-      const res = await fetch("/api/register", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          email,
-          password,
-        }),
+      const response = await axios.post("/api/register", {
+        email,
+        password,
       });
 
-      const data = await res.json();
-
-      if (res.ok) {
-        setError("");
-        toast.success("Registration successful");
-        router.push("/login");
+      setError("");
+      toast.success("Registration successful");
+      router.push("/login");
+    } catch (error: any) {
+      const data = error.response?.data;
+      // Handle different types of errors
+      if (data?.details && Array.isArray(data.details)) {
+        // Validation errors
+        const errorMessage = data.details.map((err: any) => err.message).join(", ");
+        setError(errorMessage);
+        toast.error(errorMessage);
+      } else if (data?.error) {
+        // General errors
+        setError(data.error);
+        toast.error(data.error);
       } else {
-        // Handle different types of errors
-        if (data.details && Array.isArray(data.details)) {
-          // Validation errors
-          const errorMessage = data.details.map((err: any) => err.message).join(", ");
-          setError(errorMessage);
-          toast.error(errorMessage);
-        } else if (data.error) {
-          // General errors
-          setError(data.error);
-          toast.error(data.error);
-        } else {
-          setError("Registration failed");
-          toast.error("Registration failed");
-        }
+        setError("Registration failed");
+        toast.error("Registration failed");
       }
-    } catch (error) {
-      toast.error("Error, try again");
-      setError("Error, try again");
-      console.log(error);
     }
   };
 

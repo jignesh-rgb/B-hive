@@ -64,20 +64,14 @@ const DashboardProductDetails = ({ params }: DashboardProductDetailsProps) => {
     }
 
     try {
-      const response = await apiClient.put(`/api/products/${id}`, product);
+      await apiClient.put(`/api/products/${id}`, product);
 
-      if (response.status === 200) {
-        await response.json();
-        toast.success("Product successfully updated");
-      } else {
-        const errorData = await response.json();
-        toast.error(
-          errorData.error || "There was an error while updating product"
-        );
-      }
-    } catch (error) {
-      console.error("Error updating product:", error);
-      toast.error("There was an error while updating product");
+      toast.success("Product successfully updated");
+    } catch (error: any) {
+      toast.error(
+        error.response?.data?.error || "There was an error while updating product"
+      );
+    }
     }
   };
 
@@ -87,19 +81,12 @@ const DashboardProductDetails = ({ params }: DashboardProductDetailsProps) => {
     formData.append("uploadedFile", file);
 
     try {
-      const response = await apiClient.post("/api/main-image", {
-        method: "POST",
-        body: formData,
-      });
+      await apiClient.post("/api/main-image", formData);
 
-      if (response.ok) {
-        const data = await response.json();
-      } else {
-        toast.error("File upload unsuccessful.");
-      }
-    } catch (error) {
-      console.error("There was an error while during request sending:", error);
-      toast.error("There was an error during request sending");
+      toast.success("File uploaded successfully");
+    } catch (error: any) {
+      console.error("There was an error during request sending:", error);
+      toast.error(error.response?.data?.error || "File upload unsuccessful.");
     }
   };
 
@@ -126,10 +113,10 @@ const DashboardProductDetails = ({ params }: DashboardProductDetailsProps) => {
     apiClient
       .get(`/api/categories`)
       .then((res) => {
-        return res.json();
+        setCategories(res.data);
       })
-      .then((data) => {
-        setCategories(data);
+      .catch((error) => {
+        console.error("Error fetching categories:", error);
       });
   };
 

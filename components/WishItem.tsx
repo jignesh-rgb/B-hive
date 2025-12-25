@@ -33,7 +33,7 @@ const WishItem = ({ id, title, price, image, slug, stockAvailabillity }: WishIte
     try {
       // First get user ID
       const userResponse = await apiClient.get(`/api/users/email/${session.user.email}`);
-      const userData = await userResponse.json();
+      const userData = userResponse.data;
 
       // Remove from wishlist
       await apiClient.delete(`/api/wishlist/${userData.id}/${id}`);

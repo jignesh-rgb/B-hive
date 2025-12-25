@@ -21,19 +21,12 @@ const DashboardSingleCategory = ({ params }: DashboardSingleCategoryProps) => {
   const router = useRouter();
 
   const deleteCategory = async () => {
-    const requestOptions = {
-      method: "DELETE",
-    };
     // sending API request for deleting a category
     apiClient
-      .delete(`/api/categories/${id}`, requestOptions)
-      .then((response) => {
-        if (response.status === 204) {
-          toast.success("Category deleted successfully");
-          router.push("/admin/categories");
-        } else {
-          throw Error("There was an error deleting a category");
-        }
+      .delete(`/api/categories/${id}`)
+      .then(() => {
+        toast.success("Category deleted successfully");
+        router.push("/admin/categories");
       })
       .catch((error) => {
         toast.error("There was an error deleting category");
@@ -43,20 +36,13 @@ const DashboardSingleCategory = ({ params }: DashboardSingleCategoryProps) => {
   const updateCategory = async () => {
     if (categoryInput.name.length > 0) {
       try {
-        const response = await apiClient.put(`/api/categories/${id}`, {
+        await apiClient.put(`/api/categories/${id}`, {
           name: convertCategoryNameToURLFriendly(categoryInput.name),
         });
 
-        if (response.status === 200) {
-          await response.json();
-          toast.success("Category successfully updated");
-        } else {
-          const errorData = await response.json();
-          toast.error(errorData.error || "Error updating a category");
-        }
-      } catch (error) {
-        console.error("Error updating category:", error);
-        toast.error("There was an error while updating a category");
+        toast.success("Category successfully updated");
+      } catch (error: any) {
+        toast.error(error.response?.data?.error || "Error updating a category");
       }
     } else {
       toast.error("For updating a category you must enter all values");
@@ -65,16 +51,16 @@ const DashboardSingleCategory = ({ params }: DashboardSingleCategoryProps) => {
   };
 
   useEffect(() => {
-    // sending API request for getting single categroy
+    // sending API request for getting single category
     apiClient
       .get(`/api/categories/${id}`)
       .then((res) => {
-        return res.json();
-      })
-      .then((data) => {
         setCategoryInput({
-          name: data?.name,
+          name: res.data?.name,
         });
+      })
+      .catch((error) => {
+        console.error("Error fetching category:", error);
       });
   }, [id]);
 

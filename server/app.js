@@ -1,32 +1,19 @@
 const express = require("express");
-console.log('Express loaded');
 const path = require('path');
 // Load env from server/.env then fallback to project root .env
 require('dotenv').config({ path: path.join(__dirname, '.env') });
 require('dotenv').config({ path: path.join(__dirname, '..', '.env') });
-console.log('Environment loaded');
 const bcrypt = require('bcryptjs');
-console.log('bcrypt loaded');
 const fileUpload = require("express-fileupload");
-console.log('fileUpload loaded');
 const productsRouter = require("./routes/products");
-console.log('productsRouter loaded');
 const productImagesRouter = require("./routes/productImages");
-console.log('productImagesRouter loaded');
 const categoryRouter = require("./routes/category");
-console.log('categoryRouter loaded');
 const searchRouter = require("./routes/search");
-console.log('searchRouter loaded');
 const mainImageRouter = require("./routes/mainImages");
-console.log('mainImageRouter loaded');
 const userRouter = require("./routes/users");
-console.log('userRouter loaded');
 const orderRouter = require("./routes/customer_orders");
-console.log('orderRouter loaded');
 const slugRouter = require("./routes/slugs");
-console.log('slugRouter loaded');
 const orderProductRouter = require('./routes/customer_order_product');
-console.log('orderProductRouter loaded');
 // const wishlistRouter = require('./routes/wishlist');
 const notificationsRouter = require('./routes/notifications');
 console.log('notificationsRouter loaded');
@@ -35,7 +22,6 @@ console.log('merchantRouter loaded');
 const bulkUploadRouter = require('./routes/bulkUpload');
 console.log('bulkUploadRouter loaded');
 var cors = require("cors");
-console.log('cors loaded');
 
 // Import logging middleware
 const { 
@@ -44,7 +30,6 @@ const {
   errorLogger, 
   securityLogger 
 } = require('./middleware/requestLogger');
-console.log('Logging middleware loaded');
 
 // Import rate limiting middleware
 const {
@@ -56,34 +41,27 @@ const {
   searchLimiter,
   orderLimiter
 } = require('./middleware/rateLimiter');
-console.log('Rate limiting middleware loaded');
 
 const {
   handleServerError
 } = require('./utills/errorHandler');
-console.log('Error handler loaded');
 
 const app = express();
-console.log('Express app created');
 
 // Trust proxy for accurate IP addresses
 app.set('trust proxy', 1);
 
 // Add request ID to all requests
-// app.use(addRequestId);
-console.log('Request ID middleware DISABLED for testing');
+app.use(addRequestId);
 
 // Security logging (check for suspicious patterns)
-// app.use(securityLogger);
-console.log('Security logging middleware DISABLED for testing');
+app.use(securityLogger);
 
 // Standard request logging
-// app.use(requestLogger);
-console.log('Request logging middleware DISABLED for testing');
+app.use(requestLogger);
 
 // Error logging (only logs 4xx and 5xx responses)
-// app.use(errorLogger);
-console.log('Error logging middleware DISABLED for testing');
+app.use(errorLogger);
 
 const allowedOrigins = [
   'http://localhost:3000',
@@ -120,64 +98,51 @@ const corsOptions = {
 console.log('CORS options configured');
 
 // Apply general rate limiting to all routes
-// app.use(generalLimiter);
-console.log('General rate limiter DISABLED for testing');
+app.use(generalLimiter);
 
-// app.use(express.json());
-console.log('JSON parser middleware DISABLED for testing');
-// app.use(cors(corsOptions));
-console.log('CORS middleware DISABLED for testing');
-// app.use(fileUpload());
-console.log('File upload middleware DISABLED for testing');
+app.use(express.json());
+app.use(cors(corsOptions));
+app.use(fileUpload());
 
 // Apply specific rate limiters to different route groups
-// app.use("/api/users", userManagementLimiter);
-console.log('User management rate limiter DISABLED for testing');
-// app.use("/api/search", searchLimiter);
-console.log('Search rate limiter DISABLED for testing');
-// app.use("/api/orders", orderLimiter);
-console.log('Orders rate limiter DISABLED for testing');
-// app.use("/api/order-product", orderLimiter);
-console.log('Order product rate limiter DISABLED for testing');
-// app.use("/api/images", uploadLimiter);
-console.log('Images upload limiter DISABLED for testing');
-// app.use("/api/main-image", uploadLimiter);
-console.log('Main image upload limiter DISABLED for testing');
-// app.use("/api/merchants", (req, res, next) => next()); // Temporarily bypass rate limiting for merchants
-console.log('Merchants rate limiter DISABLED for testing');
-// app.use("/api/bulk-upload", uploadLimiter);
-console.log('Bulk upload limiter DISABLED for testing');
+app.use("/api/users", userManagementLimiter);
+app.use("/api/search", searchLimiter);
+app.use("/api/orders", orderLimiter);
+app.use("/api/order-product", orderLimiter);
+app.use("/api/images", uploadLimiter);
+app.use("/api/main-image", uploadLimiter);
+app.use("/api/merchants", (req, res, next) => next()); // Temporarily bypass rate limiting for merchants
+app.use("/api/bulk-upload", uploadLimiter);
 
 // Apply stricter rate limiting to authentication-related routes
-// app.use("/api/users/email", authLimiter); // For login attempts via email lookup 
-console.log('Auth limiter DISABLED for testing');
+app.use("/api/users/email", authLimiter); // For login attempts via email lookup
 
 // Apply admin rate limiting to admin routes
 
 
-// app.use("/api/products", productsRouter);
+app.use("/api/products", productsRouter);
 // console.log('Products router added');
-// app.use("/api/categories", categoryRouter);
+app.use("/api/categories", categoryRouter);
 // console.log('Categories router added');
-// app.use("/api/images", productImagesRouter);
+app.use("/api/images", productImagesRouter);
 // console.log('Product images router added');
-// app.use("/api/main-image", mainImageRouter);
+app.use("/api/main-image", mainImageRouter);
 // console.log('Main image router added');
-// app.use("/api/users", userRouter);
+app.use("/api/users", userRouter);
 // console.log('Users router added');
-// app.use("/api/search", searchRouter);
+app.use("/api/search", searchRouter);
 // console.log('Search router added');
-// app.use("/api/orders", orderRouter);
+app.use("/api/orders", orderRouter);
 // console.log('Orders router added');
-// app.use('/api/order-product', orderProductRouter);
+app.use('/api/order-product', orderProductRouter);
 // console.log('Order product router added');
-// app.use("/api/slugs", slugRouter);
+app.use("/api/slugs", slugRouter);
 // console.log('Slugs router added');
-// app.use("/api/notifications", notificationsRouter);
+app.use("/api/notifications", notificationsRouter);
 // console.log('Notifications router added');
-// app.use("/api/merchants", merchantRouter); 
+app.use("/api/merchants", merchantRouter); 
 // console.log('Merchants router added');
-// app.use("/api/bulk-upload", bulkUploadRouter);
+app.use("/api/bulk-upload", bulkUploadRouter);
 // console.log('Bulk upload router added');
 
 // Add a simple test route

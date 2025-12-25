@@ -101,20 +101,34 @@
         console.log("📤 Sending file:", file.name, file.size, "bytes");
 
         try {
-          const response = await fetch(
-            "http://localhost:3001/api/bulk-upload",
-            {
-              method: "POST",
-              body: formData,
-            }
-          );
+          const response = await fetch("http://localhost:3001/api/bulk-upload", {
+            method: "POST",
+            body: formData,
+          });
 
           console.log("📡 Response status:", response.status);
+
+          // Check if response is OK (status code 200-299)
+          if (!response.ok) {
+            const errorText = await response.text(); // Get raw error response
+            console.error("❌ Error from server:", errorText);
+            status.textContent = "❌ Upload failed";
+            result.className = "error";
+            result.innerHTML = `
+              <h3>Error</h3>
+              <p>Server returned an error: ${response.status} - ${response.statusText}</p>
+              <pre>${errorText}</pre>
+            `;
+            return;
+          }
+
+          // Get the response text
           const text = await response.text();
           console.log("📄 Response body:", text);
 
           let data;
           try {
+            // Try to parse the response as JSON
             data = JSON.parse(text);
           } catch (e) {
             throw new Error("Invalid JSON response: " + text);
@@ -124,26 +138,24 @@
             status.textContent = "✅ Upload successful!";
             result.className = "success";
             result.innerHTML = `
-                        <h3>Success!</h3>
-                        <p><strong>Batch ID:</strong> ${data.batchId}</p>
-                        <p><strong>Status:</strong> ${data.status}</p>
-                        <p><strong>Total:</strong> ${data.total}</p>
-                        <p><strong>Created:</strong> ${data.created}</p>
-                        <p><strong>Errors:</strong> ${data.errors}</p>
-                        <pre>${JSON.stringify(data, null, 2)}</pre>
-                    `;
-          } else {
-            throw new Error(data.error || "Upload failed");
+              <h3>Success!</h3>
+              <p><strong>Batch ID:</strong> ${data.batchId}</p>
+              <p><strong>Status:</strong> ${data.status}</p>
+              <p><strong>Total:</strong> ${data.total}</p>
+              <p><strong>Created:</strong> ${data.created}</p>
+              <p><strong>Errors:</strong> ${data.errors}</p>
+              <pre>${JSON.stringify(data, null, 2)}</pre>
+            `;
           }
         } catch (error) {
           console.error("❌ Upload error:", error);
           status.textContent = "❌ Upload failed";
           result.className = "error";
           result.innerHTML = `
-                    <h3>Error</h3>
-                    <p>${error.message}</p>
-                    <pre>${error.stack || ""}</pre>
-                `;
+            <h3>Error</h3>
+            <p>${error.message}</p>
+            <pre>${error.stack || ""}</pre>
+          `;
         } finally {
           uploadBtn.disabled = false;
         }

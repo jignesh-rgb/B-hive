@@ -21,12 +21,12 @@ const DashboardProductTable = () => {
   const [products, setProducts] = useState<Product[]>([]);
 
   useEffect(() => {
-    apiClient.get("/api/products?mode=admin", {cache: "no-store"})
-      .then((res) => {
-        return res.json();
+    apiClient.get("/api/products?mode=admin")
+      .then((response) => {
+        setProducts(response.data);
       })
-      .then((data) => {
-        setProducts(data);
+      .catch((error) => {
+        console.error('Error fetching products:', error);
       });
   }, []);
 

@@ -1,6 +1,7 @@
 const express = require("express");
-
 const router = express.Router();
+
+// ✅ IMPORT CONTROLLERS FIRST
 const {
   getAllProducts,
   createProduct,
@@ -10,11 +11,23 @@ const {
   getProductById,
 } = require("../controllers/products");
 
-router.route("/").get(getAllProducts).post(createProduct);
+// =========================
+// STATIC ROUTES FIRST
+// =========================
 
+// Get all products
+router.route("/")
+  .get(getAllProducts)
+  .post(createProduct);
 
-router
-  .route("/:id")
+// Search products
+router.get("/search", searchProducts);
+
+// =========================
+// DYNAMIC ROUTES LAST
+// =========================
+
+router.route("/:id")
   .get(getProductById)
   .put(updateProduct)
   .delete(deleteProduct);

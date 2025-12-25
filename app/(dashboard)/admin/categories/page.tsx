@@ -12,11 +12,11 @@ const DashboardCategory = () => {
   // getting all categories to be displayed on the all categories page
   useEffect(() => {
     apiClient.get("/api/categories")
-      .then((res) => {
-        return res.json();
+      .then((response) => {
+        setCategories(response.data);
       })
-      .then((data) => {
-        setCategories(data);
+      .catch((error) => {
+        console.error('Error fetching categories:', error);
       });
   }, []);
 

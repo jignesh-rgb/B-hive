@@ -17,21 +17,14 @@ const DashboardNewCategoryPage = () => {
           name: convertCategoryNameToURLFriendly(categoryInput.name),
         });
 
-        if (response.status === 201) {
-          await response.json();
-          toast.success("Category added successfully");
-          setCategoryInput({
-            name: "",
-          });
-        } else {
-          const errorData = await response.json();
-          toast.error(
-            errorData.error || "There was an error while creating category"
-          );
-        }
-      } catch (error) {
-        console.error("Error creating category:", error);
-        toast.error("There was an error while creating category");
+        toast.success("Category added successfully");
+        setCategoryInput({
+          name: "",
+        });
+      } catch (error: any) {
+        toast.error(
+          error.response?.data?.error || "There was an error while creating category"
+        );
       }
     } else {
       toast.error("You need to enter values to add a category");

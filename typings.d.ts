@@ -82,11 +82,6 @@ interface SingleProductBtnProps {
 }
 
 
-interface Category {
-  id: string;
-  name: string;
-}
-
 interface WishListItem {
   id: string;
   userId: string;

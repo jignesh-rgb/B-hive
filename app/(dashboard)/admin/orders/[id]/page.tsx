@@ -55,16 +55,14 @@ const AdminSingleOrder = () => {
       const response = await apiClient.get(
         `/api/orders/${params?.id}`
       );
-      const data: Order = await response.json();
-      setOrder(data);
+      setOrder(response.data);
     };
 
     const fetchOrderProducts = async () => {
       const response = await apiClient.get(
         `/api/order-product/${params?.id}`
       );
-      const data: OrderProduct[] = await response.json();
-      setOrderProducts(data);
+      setOrderProducts(response.data);
     };
 
     fetchOrderData();
@@ -99,19 +97,9 @@ const AdminSingleOrder = () => {
         return;
       }
 
-      apiClient.put(`/api/orders/${order?.id}`, {
-        method: "PUT", // or 'PUT'
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(order),
-      })
-        .then((response) => {
-          if (response.status === 200) {
-            toast.success("Order updated successfuly");
-          } else {
-            throw Error("There was an error while updating a order");
-          }
+      apiClient.put(`/api/orders/${order?.id}`, order)
+        .then(() => {
+          toast.success("Order updated successfuly");
         })
         .catch((error) =>
           toast.error("There was an error while updating a order")
@@ -122,22 +110,20 @@ const AdminSingleOrder = () => {
   };
 
   const deleteOrder = async () => {
-    const requestOptions = {
-      method: "DELETE",
-    };
-
-    apiClient.delete(
-      `/api/order-product/${order?.id}`,
-      requestOptions
-    ).then((response) => {
-      apiClient.delete(
-        `/api/orders/${order?.id}`,
-        requestOptions
-      ).then((response) => {
-        toast.success("Order deleted successfully");
-        router.push("/admin/orders");
+    apiClient.delete(`/api/order-product/${order?.id}`)
+      .then(() => {
+        apiClient.delete(`/api/orders/${order?.id}`)
+          .then(() => {
+            toast.success("Order deleted successfully");
+            router.push("/admin/orders");
+          })
+          .catch((error) => {
+            toast.error("There was an error while deleting order");
+          });
+      })
+      .catch((error) => {
+        toast.error("There was an error while deleting order products");
       });
-    });
   };
 
   return (

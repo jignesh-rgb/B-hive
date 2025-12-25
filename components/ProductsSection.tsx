@@ -18,32 +18,26 @@ const ProductsSection = async () => {
   
   try {
     // sending API request for getting all products
-    const data = await apiClient.get("/api/products");
+    const response = await apiClient.get("/api/products");
     
-    if (!data.ok) {
-      console.error('Failed to fetch products:', data.statusText);
-      products = [];
-    } else {
-      const result = await data.json();
-      // Ensure products is an array
-      products = Array.isArray(result) ? result : [];
-    }
+    // Ensure products is an array
+    products = Array.isArray(response.data) ? response.data : [];
   } catch (error) {
     console.error('Error fetching products:', error);
     products = [];
   }
 
   return (
-    <div className="bg-blue-500 border-t-4 border-white">
-      <div className="max-w-screen-2xl mx-auto pt-20">
-        <Heading title="FEATURED PRODUCTS" />
+    <div className="bg-white border-t border-slate-200">
+      <div className="max-w-screen-2xl mx-auto pt-16 pb-20">
+        <Heading title="FEATURED PRODUCTS" color="slate" />
         <div className="grid grid-cols-4 justify-items-center max-w-screen-2xl mx-auto py-10 gap-x-2 px-10 gap-y-8 max-xl:grid-cols-3 max-md:grid-cols-2 max-sm:grid-cols-1">
           {products.length > 0 ? (
             products.map((product: any) => (
-              <ProductItem key={product.id} product={product} color="white" />
+              <ProductItem key={product.id} product={product} color="slate" />
             ))
           ) : (
-            <div className="col-span-full text-center text-white py-10">
+            <div className="col-span-full text-center text-slate-600 py-10">
               <p>No products available at the moment.</p>
             </div>
           )}

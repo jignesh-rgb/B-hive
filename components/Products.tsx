@@ -42,7 +42,7 @@ const Products = async ({ params, searchParams }: { params: { slug?: string[] },
 
   try {
     // sending API request with filtering, sorting and pagination for getting all products
-    const data = await apiClient.get(`/api/products?filters[price][$lte]=${
+    const response = await apiClient.get(`/api/products?filters[price][$lte]=${
         searchParams?.price || 3000
       }&filters[rating][$gte]=${
         Number(searchParams?.rating) || 0
@@ -53,13 +53,7 @@ const Products = async ({ params, searchParams }: { params: { slug?: string[] },
       }sort=${searchParams?.sort}&page=${page}`
     );
 
-    if (!data.ok) {
-      console.error('Failed to fetch products:', data.statusText);
-      products = [];
-    } else {
-      const result = await data.json();
-      products = Array.isArray(result) ? result : [];
-    }
+    products = Array.isArray(response.data) ? response.data : [];
   } catch (error) {
     console.error('Error fetching products:', error);
     products = [];

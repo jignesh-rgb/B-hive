@@ -27,17 +27,25 @@ interface SingleProductPageProps {
 
 const SingleProductPage = async ({ params }: SingleProductPageProps) => {
   const paramsAwaited = await params;
-  // sending API request for a single product with a given product slug
-  const data = await apiClient.get(
-    `/api/slugs/${paramsAwaited?.productSlug}`
-  );
-  const product = await data.json();
+  let product = null;
+  let images = [];
 
-  // sending API request for more than 1 product image if it exists
-  const imagesData = await apiClient.get(
-    `/api/images/${paramsAwaited?.id}`
-  );
-  const images = await imagesData.json();
+  try {
+    // sending API request for a single product with a given product slug
+    const productResponse = await apiClient.get(
+      `/api/slugs/${paramsAwaited?.productSlug}`
+    );
+    product = productResponse.data;
+
+    // sending API request for more than 1 product image if it exists
+    const imagesResponse = await apiClient.get(
+      `/api/images/${paramsAwaited?.id}`
+    );
+    images = imagesResponse.data;
+  } catch (error) {
+    console.error('Error fetching product data:', error);
+    notFound();
+  }
 
   if (!product || product.error) {
     notFound();

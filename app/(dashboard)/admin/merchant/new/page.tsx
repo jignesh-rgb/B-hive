@@ -39,14 +39,8 @@ export default function NewMerchantPage() {
     
     try {
       const response = await apiClient.post("/api/merchants", formData);
-
-      if (!response.ok) {
-        throw new Error("Failed to create merchant");
-      }
-
-      const data = await response.json();
       toast.success("Merchant created successfully");
-      router.push(`/admin/merchant/${data.id}`);
+      router.push(`/admin/merchant/${response.data.id}`);
     } catch (error) {
       console.error("Error creating merchant:", error);
       toast.error("Failed to create merchant");

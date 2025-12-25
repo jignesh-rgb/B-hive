@@ -11,11 +11,11 @@ const DashboardUsers = () => {
   useEffect(() => {
     // sending API request for all users
     apiClient.get("/api/users")
-      .then((res) => {
-        return res.json();
+      .then((response) => {
+        setUsers(response.data);
       })
-      .then((data) => {
-        setUsers(data);
+      .catch((error) => {
+        console.error("Error fetching users:", error);
       });
   }, []);
 

@@ -19,10 +19,12 @@ const AdminOrders = () => {
 
   useEffect(() => {
     const fetchOrders = async () => {
-      const response = await apiClient.get("/api/orders");
-      const data = await response.json();
-      
-      setOrders(data?.orders);
+      try {
+        const response = await apiClient.get("/api/orders");
+        setOrders(response.data?.orders);
+      } catch (error) {
+        console.error('Error fetching orders:', error);
+      }
     };
     fetchOrders();
   }, []);

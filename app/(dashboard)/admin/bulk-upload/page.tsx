@@ -13,6 +13,7 @@ import { DashboardSidebar } from "@/components";
 import BulkUploadHistory from "@/components/BulkUploadHistory";
 import React, { useState, useRef } from "react";
 import toast from "react-hot-toast";
+import axios from "axios";
 import {
   FaFileUpload,
   FaDownload,
@@ -95,39 +96,27 @@ const BulkUploadPage = () => {
       const formData = new FormData();
       formData.append("file", file);
 
-      const response = await fetch("http://localhost:3001/api/bulk-upload", {
-        method: "POST",
-        body: formData,
+      const response = await axios.post("http://localhost:3001/api/bulk-upload", formData);
+
+      setUploadResult({
+        success: true,
+        message: response.data.message || "Products uploaded successfully!",
+        details: response.data.details,
       });
-
-      const data = await response.json();
-
-      if (response.ok) {
-        setUploadResult({
-          success: true,
-          message: data.message || "Products uploaded successfully!",
-          details: data.details,
-        });
-        toast.success("Bulk upload completed!");
-        setFile(null);
-        if (fileInputRef.current) {
-          fileInputRef.current.value = "";
-        }
-      } else {
-        setUploadResult({
-          success: false,
-          message: data.error || "Upload failed",
-          details: data.details,
-        });
-        toast.error(data.error || "Upload failed");
+      toast.success("Bulk upload completed!");
+      setFile(null);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Upload error:", error);
+      const data = error.response?.data;
       setUploadResult({
         success: false,
-        message: "Network error occurred during upload",
+        message: data?.error || "Upload failed",
+        details: data?.details,
       });
-      toast.error("Network error occurred");
+      toast.error(data?.error || "Upload failed");
     } finally {
       setUploading(false);
     }

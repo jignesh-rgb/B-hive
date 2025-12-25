@@ -69,20 +69,8 @@ const AddNewProduct = () => {
         const formData = new FormData();
         formData.append("uploadedFile", selectedFile);
 
-        const uploadResponse = await fetch(`${apiClient.baseUrl}/api/main-image`, {
-          method: "POST",
-          body: formData,
-        });
-
-        console.log('Upload response status:', uploadResponse.status);
-
-        if (!uploadResponse.ok) {
-          const errorData = await uploadResponse.json().catch(() => ({ message: "Upload failed" }));
-          toast.error(`Image upload failed: ${errorData.message || "Unknown error"}`);
-          return;
-        }
-
-        const uploadData = await uploadResponse.json();
+        const uploadResponse = await apiClient.post("/api/main-image", formData);
+        const uploadData = uploadResponse.data;
         imageUrl = uploadData.imageUrl;
         toast.success("Image uploaded successfully");
       }
@@ -99,62 +87,40 @@ const AddNewProduct = () => {
       console.log("categoryId type:", typeof sanitizedProduct.categoryId, "value:", sanitizedProduct.categoryId);
 
       // Correct usage of apiClient.post
-      const response = await apiClient.post(`/api/products`, sanitizedProduct);
+      await apiClient.post(`/api/products`, sanitizedProduct);
 
-      if (response.status === 201) {
-        const data = await response.json();
-        console.log("Product created successfully:", data);
-        toast.success("Product added successfully");
-        setProduct({
-          merchantId: "",
-          title: "",
-          price: 0,
-          manufacturer: "",
-          inStock: 1,
-          mainImage: "",
-          description: "",
-          slug: "",
-          categoryId: categories[0]?.id || "",
-        });
-        setSelectedFile(null); // Clear selected file
-      } else {
-        console.error("Product creation failed with status:", response.status);
-        console.error("Response headers:", Object.fromEntries(response.headers.entries()));
-        let errorData = {};
-        try {
-          const responseText = await response.text();
-          console.log("Raw error response:", responseText);
-          if (responseText) {
-            errorData = JSON.parse(responseText);
-          }
-        } catch (parseError) {
-          console.error("Failed to parse error response:", parseError);
-          errorData = { message: `HTTP ${response.status}: ${response.statusText}` };
-        }
-        console.error("Failed to create product:", errorData);
-        toast.error(`Error: ${errorData.message || errorData.error || "Failed to add product"}`);
-      }
-    } catch (error) {
+      console.log("Product created successfully");
+      toast.success("Product added successfully");
+      setProduct({
+        merchantId: "",
+        title: "",
+        price: 0,
+        manufacturer: "",
+        inStock: 1,
+        mainImage: "",
+        description: "",
+        slug: "",
+        categoryId: categories[0]?.id || "",
+      });
+      setSelectedFile(null); // Clear selected file
+    } catch (error: any) {
       console.error("Error adding product:", error);
-      toast.error("Network error. Please try again.");
+      toast.error(error.response?.data?.error || "Network error. Please try again.");
+    }
     }
   };
 
   const fetchMerchants = async () => {
     try {
-      const res = await apiClient.get("/api/merchants");
-      if (!res.ok) {
-        throw new Error("Failed to fetch merchants");
-      }
-      const data: Merchant[] = await res.json();
-      console.log("Fetched merchants:", data);
-      setMerchants(data || []);
+      const response = await apiClient.get("/api/merchants");
+      console.log("Fetched merchants:", response.data);
+      setMerchants(response.data || []);
       // Only set default merchant if none is selected and we have merchants
-      if (!product.merchantId && data && data.length > 0) {
-        console.log("Setting default merchant:", data[0].id);
+      if (!product.merchantId && response.data && response.data.length > 0) {
+        console.log("Setting default merchant:", response.data[0].id);
         setProduct((prev) => ({
           ...prev,
-          merchantId: data[0].id,
+          merchantId: response.data[0].id,
         }));
       }
     } catch (e) {
@@ -168,20 +134,20 @@ const AddNewProduct = () => {
   const fetchCategories = async () => {
     apiClient
       .get(`/api/categories`)
-      .then((res) => {
-        return res.json();
-      })
-      .then((data: Category[]) => {
-        console.log("Fetched categories:", data);
-        setCategories(data || []);
+      .then((response) => {
+        console.log("Fetched categories:", response.data);
+        setCategories(response.data || []);
         // Only set categoryId if it's not already set and we have categories
-        if (!product.categoryId && data && data.length > 0) {
-          console.log("Setting default category:", data[0].id);
+        if (!product.categoryId && response.data && response.data.length > 0) {
+          console.log("Setting default category:", response.data[0].id);
           setProduct((prev) => ({
             ...prev,
-            categoryId: data[0].id,
+            categoryId: response.data[0].id,
           }));
         }
+      })
+      .catch((error) => {
+        console.error("Error fetching categories:", error);
       });
   };
 

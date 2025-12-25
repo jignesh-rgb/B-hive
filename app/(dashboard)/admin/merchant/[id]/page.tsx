@@ -52,27 +52,21 @@ export default function MerchantDetailPage({
     try {
       setLoading(true);
       const response = await apiClient.get(`/api/merchants/${id}`);
-      
-      if (!response.ok) {
-        if (response.status === 404) {
-          router.push("/admin/merchant");
-          return;
-        }
-        throw new Error("Failed to fetch merchant");
-      }
-      
-      const data = await response.json();
-      setMerchant(data);
+      setMerchant(response.data);
       setFormData({
-        name: data.name || "",
-        email: data.email || "",
-        phone: data.phone || "",
-        address: data.address || "",
-        description: data.description || "",
-        status: data.status || "ACTIVE",
+        name: response.data.name || "",
+        email: response.data.email || "",
+        phone: response.data.phone || "",
+        address: response.data.address || "",
+        description: response.data.description || "",
+        status: response.data.status || "ACTIVE",
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error fetching merchant:", error);
+      if (error.response?.status === 404) {
+        router.push("/admin/merchant");
+        return;
+      }
       toast.error("Failed to load merchant details");
     } finally {
       setLoading(false);
@@ -95,14 +89,7 @@ const handleInputChange = (
  const handleSubmit = async (e: React.FormEvent) => {
   e.preventDefault();
   try {
-    // This is the correct way to use apiClient.put
-    // It should just take the URL and the data object
     const response = await apiClient.put(`/api/merchants/${id}`, formData);
-
-    if (!response.ok) {
-      throw new Error("Failed to update merchant");
-    }
-
     toast.success("Merchant updated successfully");
     fetchMerchant(); // Refresh data
   } catch (error) {
@@ -117,21 +104,13 @@ const handleInputChange = (
     }
     
     try {
-      const response = await apiClient.delete(`/api/merchants/${id}`);
-      
-      if (!response.ok) {
-        const data = await response.json();
-        throw new Error(data.error || "Failed to delete merchant");
-      }
-      
+      await apiClient.delete(`/api/merchants/${id}`);
       toast.success("Merchant deleted successfully");
       router.push("/admin/merchant");
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error deleting merchant:", error);
       toast.error(
-        typeof error === "object" && error !== null && "message" in error
-          ? (error as { message?: string }).message || "Failed to delete merchant"
-          : "Failed to delete merchant"
+        error.response?.data?.error || "Failed to delete merchant"
       );
     }
   };

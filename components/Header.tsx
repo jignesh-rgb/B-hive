@@ -37,10 +37,8 @@ const Header = () => {
 
   // getting all wishlist items by user id
   const getWishlistByUserId = async (id: string) => {
-    const response = await apiClient.get(`/api/wishlist/${id}`, {
-      cache: "no-store",
-    });
-    const wishlist = await response.json();
+    const response = await apiClient.get(`/api/wishlist/${id}`);
+    const wishlist = response.data;
     const productArray: {
       id: string;
       title: string;
@@ -61,12 +59,12 @@ const Header = () => {
   const getUserByEmail = async () => {
     if (session?.user?.email) {
       
-      apiClient.get(`/api/users/email/${session?.user?.email}`, {
-        cache: "no-store",
-      })
-        .then((response) => response.json())
-        .then((data) => {
-          getWishlistByUserId(data?.id);
+      apiClient.get(`/api/users/email/${session?.user?.email}`)
+        .then((response) => {
+          getWishlistByUserId(response.data?.id);
+        })
+        .catch((error) => {
+          console.error('Error fetching user:', error);
         });
     }
   };
@@ -79,17 +77,37 @@ const Header = () => {
     <header className="bg-white">
       <HeaderTop />
       {pathname.startsWith("/admin") === false && (
-        <div className="h-32 bg-white flex items-center justify-between px-16 max-[1320px]:px-16 max-md:px-6 max-lg:flex-col max-lg:gap-y-7 max-lg:justify-center max-lg:h-60 max-w-screen-2xl mx-auto">
-          <Link href="/">
-            <img src="/logo v1 svg.svg" width={300} height={300} alt="singitronic logo" className="relative right-5 max-[1023px]:w-56" />
-          </Link>
-          <SearchInput />
-          <div className="flex gap-x-10 items-center">
-            <NotificationBell />
-            <HeartElement wishQuantity={wishQuantity} />
-            <CartElement />
+        <>
+          <nav className="bg-white border-b border-slate-200">
+            <div className="max-w-screen-2xl mx-auto px-16 max-md:px-6">
+              <div className="flex items-center justify-center h-12 gap-x-8 max-md:gap-x-4">
+                <Link href="/" className="text-slate-700 hover:text-[#457B9D] transition font-medium">
+                  Home
+                </Link>
+                <Link href="/shop" className="text-slate-700 hover:text-[#457B9D] transition font-medium">
+                  Shop
+                </Link>
+                <Link href="/about" className="text-slate-700 hover:text-[#457B9D] transition font-medium">
+                  About
+                </Link>
+                <Link href="/contact" className="text-slate-700 hover:text-[#457B9D] transition font-medium">
+                  Contact
+                </Link>
+              </div>
+            </div>
+          </nav>
+          <div className="h-32 bg-white flex items-center justify-between px-16 max-[1320px]:px-16 max-md:px-6 max-lg:flex-col max-lg:gap-y-7 max-lg:justify-center max-lg:h-60 max-w-screen-2xl mx-auto">
+            <Link href="/">
+              <img src="/logo v1 svg.svg" width={300} height={300} alt="singitronic logo" className="relative right-5 max-[1023px]:w-56" />
+            </Link>
+            <SearchInput />
+            <div className="flex gap-x-10 items-center">
+              <NotificationBell />
+              <HeartElement wishQuantity={wishQuantity} />
+              <CartElement />
+            </div>
           </div>
-        </div>
+        </>
       )}
       {pathname.startsWith("/admin") === true && (
         <div className="flex justify-between h-32 bg-white items-center px-16 max-[1320px]:px-10  max-w-screen-2xl mx-auto max-[400px]:px-5">

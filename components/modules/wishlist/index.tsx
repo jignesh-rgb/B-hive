@@ -11,10 +11,8 @@ export const WishlistModule = () => {
   const { wishlist, setWishlist } = useWishlistStore();
 
   const getWishlistByUserId = async (id: string) => {
-    const response = await apiClient.get(`/api/wishlist/${id}`, {
-      cache: "no-store",
-    });
-    const wishlist = await response.json();
+    const response = await apiClient.get(`/api/wishlist/${id}`);
+    const wishlist = response.data;
 
     const productArray: {
       id: string;
@@ -32,12 +30,12 @@ export const WishlistModule = () => {
 
   const getUserByEmail = async () => {
     if (session?.user?.email) {
-      apiClient.get(`/api/users/email/${session?.user?.email}`, {
-        cache: "no-store",
-      })
-        .then((response) => response.json())
-        .then((data) => {
-          getWishlistByUserId(data?.id);
+      apiClient.get(`/api/users/email/${session?.user?.email}`)
+        .then((response) => {
+          getWishlistByUserId(response.data?.id);
+        })
+        .catch((error) => {
+          console.error('Error fetching user:', error);
         });
     }
   };
