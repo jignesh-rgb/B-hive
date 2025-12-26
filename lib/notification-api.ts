@@ -27,11 +27,11 @@ export const notificationApi = {
     
     const response = await apiClient.get(endpoint);
     
-    if (!response.ok) {
+    if (response.status < 200 || response.status >= 300) {
       throw new Error(`Failed to fetch notifications: ${response.statusText}`);
     }
     
-    return response.json();
+    return response.data;
   },
 
   /**
@@ -40,11 +40,11 @@ export const notificationApi = {
   async getUnreadCount(userId: string): Promise<{ unreadCount: number }> {
     const response = await apiClient.get(`/api/notifications/${userId}/unread-count`);
     
-    if (!response.ok) {
+    if (response.status < 200 || response.status >= 300) {
       throw new Error(`Failed to fetch unread count: ${response.statusText}`);
     }
     
-    return response.json();
+    return response.data;
   },
 
   /**
@@ -53,11 +53,11 @@ export const notificationApi = {
   async createNotification(data: NotificationCreateInput) {
     const response = await apiClient.post('/api/notifications', data);
     
-    if (!response.ok) {
+    if (response.status < 200 || response.status >= 300) {
       throw new Error(`Failed to create notification: ${response.statusText}`);
     }
     
-    return response.json();
+    return response.data;
   },
 
   /**
@@ -66,11 +66,11 @@ export const notificationApi = {
   async updateNotification(id: string, isRead: boolean) {
     const response = await apiClient.put(`/api/notifications/${id}`, { isRead });
     
-    if (!response.ok) {
+    if (response.status < 200 || response.status >= 300) {
       throw new Error(`Failed to update notification: ${response.statusText}`);
     }
     
-    return response.json();
+    return response.data;
   },
 
   /**
@@ -79,11 +79,11 @@ export const notificationApi = {
   async bulkMarkAsRead(payload: BulkActionPayload & { userId: string }) {
     const response = await apiClient.post('/api/notifications/mark-read', payload);
     
-    if (!response.ok) {
+    if (response.status < 200 || response.status >= 300) {
       throw new Error(`Failed to mark notifications as read: ${response.statusText}`);
     }
     
-    return response.json();
+    return response.data;
   },
 
   /**
@@ -91,15 +91,14 @@ export const notificationApi = {
    */
   async deleteNotification(id: string, userId: string) {
     const response = await apiClient.delete(`/api/notifications/${id}`, {
-      body: JSON.stringify({ userId }),
-      headers: { 'Content-Type': 'application/json' }
+      data: { userId }
     });
     
-    if (!response.ok) {
+    if (response.status < 200 || response.status >= 300) {
       throw new Error(`Failed to delete notification: ${response.statusText}`);
     }
     
-    return response.json();
+    return response.data;
   },
 
   /**
@@ -107,14 +106,13 @@ export const notificationApi = {
    */
   async bulkDeleteNotifications(payload: BulkActionPayload & { userId: string }) {
     const response = await apiClient.delete('/api/notifications/bulk', {
-      body: JSON.stringify(payload),
-      headers: { 'Content-Type': 'application/json' }
+      data: payload
     });
     
-    if (!response.ok) {
+    if (response.status < 200 || response.status >= 300) {
       throw new Error(`Failed to delete notifications: ${response.statusText}`);
     }
     
-    return response.json();
+    return response.data;
   }
 };

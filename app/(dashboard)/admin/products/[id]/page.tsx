@@ -72,7 +72,6 @@ const DashboardProductDetails = ({ params }: DashboardProductDetailsProps) => {
         error.response?.data?.error || "There was an error while updating product"
       );
     }
-    }
   };
 
   // functionality for uploading main image file
@@ -95,16 +94,11 @@ const DashboardProductDetails = ({ params }: DashboardProductDetailsProps) => {
     apiClient
       .get(`/api/products/${id}`)
       .then((res) => {
-        return res.json();
-      })
-      .then((data) => {
-        setProduct(data);
+        setProduct(res.data);
       });
 
-    const imagesData = await apiClient.get(`/api/images/${id}`, {
-      cache: "no-store",
-    });
-    const images = await imagesData.json();
+    const imagesData = await apiClient.get(`/api/images/${id}`);
+    const images = imagesData.data;
     setOtherImages((currentImages) => images);
   };
 

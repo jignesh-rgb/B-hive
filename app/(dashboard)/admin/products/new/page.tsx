@@ -107,7 +107,6 @@ const AddNewProduct = () => {
       console.error("Error adding product:", error);
       toast.error(error.response?.data?.error || "Network error. Please try again.");
     }
-    }
   };
 
   const fetchMerchants = async () => {

@@ -57,7 +57,7 @@ const DashboardSingleUserPage = ({ params }: DashboardUserDetailsProps) => {
             role: userInput.role,
           });
           toast.success("User successfully updated");
-        } catch (error) {
+        } catch (error: any) {
           console.error("Error updating user:", error);
           toast.error(error.response?.data?.error || "There was an error while updating user");
         }
