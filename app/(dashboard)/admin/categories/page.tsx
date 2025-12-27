@@ -74,7 +74,7 @@ const DashboardCategory = () => {
                         href={`/admin/categories/${category?.id}`}
                         className="btn btn-ghost btn-xs"
                       >
-                        details
+                        Details
                       </Link>
                     </th>
                   </tr>

@@ -23,8 +23,8 @@ async function uploadMainImage(req, res) {
       // Generate unique filename to avoid conflicts
       const uniqueFileName = `${Date.now()}-${Math.random().toString(36).substring(2)}-${uploadedFile.name}`;
 
-      // Move file to the public directory
-      const uploadPath = path.join(process.cwd(), '..', 'public', 'uploads', uniqueFileName);
+      // Move file to the backend uploads directory
+      const uploadPath = path.join(__dirname, '..', 'uploads', uniqueFileName);
       console.log('Current working directory:', process.cwd());
       console.log('Moving file to:', uploadPath);
       await uploadedFile.mv(uploadPath);

@@ -16,10 +16,12 @@ import { FaStar, FaHeart, FaCartPlus, FaLeaf, FaCheck } from "react-icons/fa";
 import { useWishlistStore } from "@/app/_zustand/wishlistStore";
 import { useProductStore } from "@/app/_zustand/store";
 import { sanitize } from "@/lib/sanitize";
+import { getImageSrc } from "@/lib/image";
 import toast from "react-hot-toast";
 
 interface Product {
-  id: string;
+  id?: string;
+  _id?: string;
   title: string;
   price: number;
   mainImage?: string;
@@ -47,14 +49,14 @@ const ProductItem = ({ product }: { product: Product }) => {
     e.preventDefault();
     e.stopPropagation();
     if (isInWishlist) {
-      removeFromWishlist(product.id);
+      removeFromWishlist(product._id || product.id!);
       toast.success("Removed from wishlist");
     } else {
       addToWishlist({
-        id: product.id,
+        id: product._id || product.id!,
         title: product.title,
         price: product.price,
-        image: product.mainImage || "/product_placeholder.jpg",
+        image: getImageSrc(product.mainImage),
         slug: product.slug,
         stockAvailabillity: product.inStock || 1,
       });
@@ -66,10 +68,10 @@ const ProductItem = ({ product }: { product: Product }) => {
     e.preventDefault();
     e.stopPropagation();
     addToCart({
-      id: product.id,
+      id: product._id || product.id!,
       title: product.title,
       price: product.price,
-      image: product.mainImage || "/product_placeholder.jpg",
+      image: getImageSrc(product.mainImage),
       amount: 1,
     });
     toast.success("Added to cart");
@@ -112,7 +114,7 @@ const ProductItem = ({ product }: { product: Product }) => {
         {/* Image Container */}
         <div className="relative h-64 overflow-hidden bg-neutral-50">
           <Image
-            src={product.mainImage ? `/${product.mainImage}` : "/product_placeholder.jpg"}
+            src={getImageSrc(product.mainImage)}
             fill
             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
             className={`object-cover transition-all duration-500 group-hover:scale-110 ${

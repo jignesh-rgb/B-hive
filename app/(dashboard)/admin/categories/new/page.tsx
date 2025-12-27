@@ -4,11 +4,13 @@ import React, { useState } from "react";
 import toast from "react-hot-toast";
 import { convertCategoryNameToURLFriendly } from "../../../../../utils/categoryFormating";
 import apiClient from "@/lib/api";
+import { useRouter } from "next/navigation";
 
 const DashboardNewCategoryPage = () => {
   const [categoryInput, setCategoryInput] = useState({
     name: "",
   });
+  const router = useRouter();
 
   const addNewCategory = async () => {
     if (categoryInput.name.length > 0) {
@@ -18,9 +20,7 @@ const DashboardNewCategoryPage = () => {
         });
 
         toast.success("Category added successfully");
-        setCategoryInput({
-          name: "",
-        });
+        router.push("/admin/categories");
       } catch (error: any) {
         toast.error(
           error.response?.data?.error || "There was an error while creating category"

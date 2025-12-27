@@ -13,6 +13,7 @@ import { useProductStore } from "@/app/_zustand/store";
 import React from "react";
 import toast from "react-hot-toast";
 import { useRouter } from "next/navigation";
+import { getImageSrc } from "@/lib/image";
 
 const BuyNowSingleProductBtn = ({
   product,
@@ -23,10 +24,10 @@ const BuyNowSingleProductBtn = ({
 
   const handleAddToCart = () => {
     addToCart({
-      id: product?.id.toString(),
+      id: product?._id.toString(),
       title: product?.title,
       price: product?.price,
-      image: product?.mainImage,
+      image: getImageSrc(product?.mainImage),
       amount: quantityCount,
     });
     calculateTotals();

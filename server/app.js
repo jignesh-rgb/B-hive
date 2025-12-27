@@ -104,6 +104,9 @@ app.use(express.json());
 app.use(cors(corsOptions));
 app.use(fileUpload());
 
+// Serve uploaded images statically
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
 // Apply specific rate limiters to different route groups
 app.use("/api/users", userManagementLimiter);
 app.use("/api/search", searchLimiter);

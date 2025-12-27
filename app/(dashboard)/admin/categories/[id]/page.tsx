@@ -41,6 +41,7 @@ const DashboardSingleCategory = ({ params }: DashboardSingleCategoryProps) => {
         });
 
         toast.success("Category successfully updated");
+        router.push("/admin/categories");
       } catch (error: any) {
         toast.error(error.response?.data?.error || "Error updating a category");
       }

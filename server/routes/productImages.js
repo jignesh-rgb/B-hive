@@ -8,7 +8,7 @@ const {
 } = require('../controllers/productImages')
 
 
-router.route('/:id').get(getSingleProductImages); 
+router.route('/:id').get(getSingleProductImages);
 
 
 router.route('/').post(createImage);

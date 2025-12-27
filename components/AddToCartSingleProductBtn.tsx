@@ -13,6 +13,7 @@
 
 import React from "react";
 import { useProductStore } from "@/app/_zustand/store";
+import { getImageSrc } from "@/lib/image";
 import toast from "react-hot-toast";
 
 
@@ -22,10 +23,10 @@ const AddToCartSingleProductBtn = ({ product, quantityCount } : SingleProductBtn
 
   const handleAddToCart = () => {
     addToCart({
-      id: product?.id.toString(),
+      id: product?._id.toString(),
       title: product?.title,
       price: product?.price,
-      image: product?.mainImage,
+      image: getImageSrc(product?.mainImage),
       amount: quantityCount
     });
     calculateTotals();

@@ -1,5 +1,5 @@
 interface Product {
-  id: string;
+  _id: string;
   slug: string;
   title: string;
   price: number;
@@ -52,7 +52,7 @@ interface Category {
 }
 
 interface User {
-  id: string;
+  _id: string;
   email: string;
   password: string | null;
   role: string;

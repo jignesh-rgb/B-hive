@@ -351,25 +351,46 @@ const updateProduct = asyncHandler(async (request, response) => {
         throw new AppError("Product not found", 404);
     }
 
-    // Updating found product
-    const updatedProduct = await Product.findByIdAndUpdate(
-        id,
-        {
-            merchantId: merchantId,
-            title: title,
-            mainImage: mainImage,
-            slug: slug,
-            price: price,
-            rating: rating,
-            description: description,
-            manufacturer: manufacturer,
-            categoryId: categoryId,
-            inStock: inStock,
-        },
-        { new: true }
-    );
+    // Validate ObjectId fields
+    if (categoryId && !mongoose.Types.ObjectId.isValid(categoryId)) {
+        throw new AppError("Invalid category ID", 400);
+    }
+    if (merchantId && !mongoose.Types.ObjectId.isValid(merchantId)) {
+        throw new AppError("Invalid merchant ID", 400);
+    }
 
-    return response.status(200).json(updatedProduct);
+    // Updating found product
+    try {
+        const updatedProduct = await Product.findByIdAndUpdate(
+            id,
+            {
+                ...(merchantId && { merchantId }),
+                ...(slug && { slug }),
+                ...(title && { title }),
+                ...(mainImage && { mainImage }),
+                ...(price !== undefined && { price }),
+                ...(rating !== undefined && { rating }),
+                ...(description && { description }),
+                ...(manufacturer && { manufacturer }),
+                ...(categoryId && { categoryId }),
+                ...(inStock !== undefined && { inStock }),
+            },
+            { new: true, runValidators: true }
+        );
+
+        return response.status(200).json(updatedProduct);
+    } catch (error) {
+        if (error.name === 'ValidationError') {
+            throw new AppError(`Validation error: ${error.message}`, 400);
+        }
+        if (error.name === 'CastError') {
+            throw new AppError(`Invalid data format: ${error.path} must be a valid ${error.kind}`, 400);
+        }
+        if (error.code === 11000) {
+            throw new AppError("A product with this slug already exists", 400);
+        }
+        throw error;
+    }
 });
 
 // Method for deleting a product

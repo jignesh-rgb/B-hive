@@ -72,10 +72,10 @@ const DashboardUsers = () => {
                     </td>
                     <th>
                       <Link
-                        href={`/admin/users/${user?.id}`}
+                        href={`/admin/users/${user?._id}`}
                         className="btn btn-ghost btn-xs"
                       >
-                        details
+                        Details
                       </Link>
                     </th>
                   </tr>

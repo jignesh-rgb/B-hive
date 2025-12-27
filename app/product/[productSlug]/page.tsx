@@ -14,6 +14,7 @@ import { FaSquareFacebook } from "react-icons/fa6";
 import { FaSquareXTwitter } from "react-icons/fa6";
 import { FaSquarePinterest } from "react-icons/fa6";
 import { sanitize } from "@/lib/sanitize";
+import { getImageSrc } from "@/lib/image";
 
 interface ImageItem {
   imageID: string;
@@ -57,7 +58,7 @@ const SingleProductPage = async ({ params }: SingleProductPageProps) => {
         <div className="flex justify-center gap-x-16 pt-10 max-lg:flex-col items-center gap-y-5 px-5">
           <div>
             <Image
-              src={product?.mainImage ? `/${product?.mainImage}` : "/product_placeholder.jpg"}
+              src={getImageSrc(product?.mainImage)}
               width={500}
               height={500}
               alt="main image"
@@ -67,7 +68,7 @@ const SingleProductPage = async ({ params }: SingleProductPageProps) => {
               {images?.map((imageItem: ImageItem, key: number) => (
                 <Image
                   key={imageItem.imageID + key}
-                  src={`/${imageItem.image}`}
+                  src={getImageSrc(imageItem.image)}
                   width={100}
                   height={100}
                   alt="laptop image"
