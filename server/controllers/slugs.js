@@ -1,17 +1,10 @@
-const prisma = require("../utills/db"); // ✅ Use shared connection
+const Product = require("../models/Product");
 
 async function getProductBySlug(request, response) {
   const { slug } = request.params;
-  const product = await prisma.product.findMany({
-    where: {
-      slug: slug,
-    },
-    include: {
-      category: true
-    },
-  });
+  const product = await Product.findOne({ slug });
 
-  const foundProduct = product[0]; // Assuming there's only one product with that slug
+  const foundProduct = product;
   if (!foundProduct) {
     return response.status(404).json({ error: "Product not found" });
   }

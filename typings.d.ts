@@ -59,7 +59,7 @@ interface User {
 }
 
 interface Order {
-  id: string;
+  _id: string;
   adress: string;
   apartment: string;
   company: string;
@@ -69,7 +69,7 @@ interface Order {
   name: string;
   phone: string;
   postalCode: string;
-  status: "processing" | "canceled" | "delivered";
+  status: "processing" | "cancelled" | "delivered";
   city: string;
   country: string;
   orderNotice: string?;

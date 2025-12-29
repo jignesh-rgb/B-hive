@@ -54,7 +54,7 @@ const AdminOrders = () => {
             {/* row 1 */}
             {orders && orders.length > 0 &&
               orders.map((order) => (
-                <tr key={order?.id}>
+                <tr key={order?._id}>
                   <th>
                     <label>
                       <input type="checkbox" className="checkbox" />
@@ -63,7 +63,7 @@ const AdminOrders = () => {
 
                   <td>
                     <div>
-                      <p className="font-bold">#{order?.id}</p>
+                      <p className="font-bold">#{order?._id}</p>
                     </div>
                   </td>
 
@@ -89,10 +89,10 @@ const AdminOrders = () => {
                   <td>{ new Date(Date.parse(order?.dateTime)).toDateString() }</td>
                   <th>
                     <Link
-                      href={`/admin/orders/${order?.id}`}
+                      href={`/admin/orders/${order?._id}`}
                       className="btn btn-ghost btn-xs"
                     >
-                      details
+                      Details
                     </Link>
                   </th>
                 </tr>
