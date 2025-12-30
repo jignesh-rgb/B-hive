@@ -70,11 +70,13 @@ async function createCustomerOrder(request, response) {
             adress: validatedData.adress,
             apartment: validatedData.apartment,
             postalCode: validatedData.postalCode,
-            status: validatedData.status,
+            status: validatedData.paymentMethod === 'online' ? 'pending' : 'processing', // COD orders go to processing immediately
             city: validatedData.city,
             country: validatedData.country,
             orderNotice: validatedData.orderNotice,
             total: validatedData.total,
+            paymentMethod: validatedData.paymentMethod,
+            paymentStatus: validatedData.paymentMethod === 'online' ? 'pending' : 'paid', // COD is considered paid immediately
             dateTime: new Date(),
             products: [] // Initialize with empty products array
         });
@@ -107,13 +109,14 @@ async function createCustomerOrder(request, response) {
             }
 
             if (user) {
+                const notificationType = validatedData.paymentMethod === 'online' ? 'pending' : 'confirmed';
                 await createOrderUpdateNotification(
                     user.id,
-                    'confirmed',
+                    notificationType,
                     corder.id,
                     validatedData.total
                 );
-                console.log(`📧 Order confirmation notification sent to user: ${user.email}`);
+                console.log(`📧 Order ${notificationType} notification sent to user: ${user.email}`);
             } else {
                 console.log(`ℹ️  No user account found for email: ${validatedData.email} - notification skipped`);
             }

@@ -113,3 +113,10 @@ declare module "next-auth/jwt" {
     role: string;
   }
 }
+
+// Razorpay types
+declare global {
+  interface Window {
+    Razorpay: any;
+  }
+}

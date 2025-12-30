@@ -12,6 +12,16 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: false // Allow null for OAuth users
   },
+  name: {
+    type: String,
+    required: true,
+    trim: true
+  },
+  lastname: {
+    type: String,
+    required: true,
+    trim: true
+  },
   role: {
     type: String,
     default: 'user',

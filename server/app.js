@@ -21,6 +21,8 @@ const merchantRouter = require('./routes/merchant'); // Add this line
 console.log('merchantRouter loaded');
 const bulkUploadRouter = require('./routes/bulkUpload');
 console.log('bulkUploadRouter loaded');
+const paymentsRouter = require('./routes/payments');
+console.log('paymentsRouter loaded');
 var cors = require("cors");
 
 // Import logging middleware
@@ -147,6 +149,8 @@ app.use("/api/merchants", merchantRouter);
 // console.log('Merchants router added');
 app.use("/api/bulk-upload", bulkUploadRouter);
 // console.log('Bulk upload router added');
+app.use("/api/payments", paymentsRouter);
+// console.log('Payments router added');
 
 // Add a simple test route
 app.get('/test', (req, res) => {

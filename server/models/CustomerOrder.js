@@ -83,6 +83,28 @@ const customerOrderSchema = new mongoose.Schema({
     required: true,
     min: 0
   },
+  paymentMethod: {
+    type: String,
+    enum: ['cod', 'online'],
+    default: 'cod'
+  },
+  paymentStatus: {
+    type: String,
+    enum: ['pending', 'paid', 'failed'],
+    default: 'pending'
+  },
+  razorpayOrderId: {
+    type: String,
+    trim: true
+  },
+  razorpayPaymentId: {
+    type: String,
+    trim: true
+  },
+  razorpaySignature: {
+    type: String,
+    trim: true
+  },
   products: [orderProductSchema] // Embedded order items
 }, {
   timestamps: true

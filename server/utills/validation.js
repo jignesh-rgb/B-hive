@@ -311,6 +311,21 @@ const orderValidation = {
     }
 
     return status.toLowerCase();
+  },
+
+  // Validate payment method
+  validatePaymentMethod: (paymentMethod) => {
+    const validMethods = ['cod', 'online'];
+    
+    if (!paymentMethod || typeof paymentMethod !== 'string') {
+      return 'cod'; // Default to COD if not specified
+    }
+
+    if (!validMethods.includes(paymentMethod.toLowerCase())) {
+      throw new ValidationError(`Invalid payment method. Must be one of: ${validMethods.join(', ')}`, 'paymentMethod');
+    }
+
+    return paymentMethod.toLowerCase();
   }
 };
 
@@ -353,6 +368,7 @@ const validateOrderData = (orderData) => {
   validatedData.postalCode = safeValidate(orderValidation.validatePostalCode, orderData.postalCode, 'postalCode');
   validatedData.total = safeValidate(orderValidation.validateTotal, orderData.total, 'total');
   validatedData.status = safeValidate(orderValidation.validateStatus, orderData.status || 'pending', 'status');
+  validatedData.paymentMethod = safeValidate(orderValidation.validatePaymentMethod, orderData.paymentMethod, 'paymentMethod');
   
   // Optional fields
   validatedData.orderNotice = orderData.orderNotice ? 

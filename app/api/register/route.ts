@@ -26,7 +26,7 @@ export const POST = async (request: Request) => {
       throw validationResult.error;
     }
 
-    const { email, password } = validationResult.data;
+    const { email, password, name, lastname } = validationResult.data;
 
     const existingUser = await User.findOne({ 
       email 
@@ -42,6 +42,8 @@ export const POST = async (request: Request) => {
     const newUser = await User.create({
       email,
       password: hashedPassword,
+      name,
+      lastname,
       role: "user",
     });
 
