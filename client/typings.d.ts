@@ -1,122 +1,131 @@
 interface Product {
-  _id: string;
-  slug: string;
-  title: string;
-  price: number;
-  rating: number;
-  description: string;
-  mainImage: string;
-  manufacturer: string;
-  categoryId: string;
-  category: {name: string}?;
-  inStock: number;
+    _id: string;
+    slug: string;
+    title: string;
+    price: number;
+
+    rating: {
+        rating: number;
+    }[];
+
+    description: string;
+    mainImage: string;
+    manufacturer: string;
+    categoryId: string;
+    category?: {
+        name: string;
+    };
+    inStock: number;
+    isOrganic: boolean;
+    isBestseller: boolean;
 }
 
+
 interface Merchant {
-  id: string;
-  name: string;
-  email: string;
-  description: string;
-  phone: string;
-  address: string;
-  status: "active" | "inactive";
-  createdAt: string;
-  updatedAt: string;
+    id: string;
+    name: string;
+    email: string;
+    description: string;
+    phone: string;
+    address: string;
+    status: "active" | "inactive";
+    createdAt: string;
+    updatedAt: string;
 }
 
 interface SingleProductPageProps {
-  params: {
-    id: string;
-    productSlug: string;
-  };
+    params: {
+        id: string;
+        productSlug: string;
+    };
 }
 
 type ProductInWishlist = {
-  id: string;
-  title: string;
-  price: number;
-  image: string;
-  slug: string;
-  stockAvailabillity: number;
+    id: string;
+    title: string;
+    price: number;
+    image: string;
+    slug: string;
+    stockAvailabillity: number;
 };
 
 interface OtherImages {
-  imageID: number;
-  productID: number;
-  image: string;
+    imageID: number;
+    productID: number;
+    image: string;
 }
 
 interface Category {
-  id: string;
-  name: string;
+    id: string;
+    name: string;
 }
 
 interface User {
-  _id: string;
-  email: string;
-  password: string | null;
-  role: string;
+    _id: string;
+    email: string;
+    password: string | null;
+    role: string;
 }
 
 interface Order {
-  _id: string;
-  adress: string;
-  apartment: string;
-  company: string;
-  dateTime: string;
-  email: string;
-  lastname: string;
-  name: string;
-  phone: string;
-  postalCode: string;
-  status: "processing" | "cancelled" | "delivered";
-  city: string;
-  country: string;
-  orderNotice: string?;
-  total: number;
+    _id: string;
+    adress: string;
+    apartment: string;
+    company: string;
+    dateTime: string;
+    email: string;
+    lastname: string;
+    name: string;
+    phone: string;
+    postalCode: string;
+    status: "processing" | "cancelled" | "delivered";
+    city: string;
+    country: string;
+    orderNotice: string?;
+    total: number;
 }
 
 interface SingleProductBtnProps {
-  product: Product;
-  quantityCount: number;
+    product: Product;
+    quantityCount: number;
 }
 
 
 interface WishListItem {
-  id: string;
-  userId: string;
-  productId: string;
-  product: Product;
+    id: string;
+    userId: string;
+    productId: string;
+    product: Product;
 }
 
 
 declare module "next-auth" {
-  interface Session {
-    user: {
-      id: string;
-      name: string;
-      email: string;
-      image: string;
-      role: string;
-    };
-  }
+    interface Session {
+        user: {
+            id: string;
+            name: string;
+            email: string;
+            image: string;
+            role: string;
+        };
+    }
 
-  interface User {
-    id: string;
-    role: string;
-  }
+    interface User {
+        id: string;
+        role: string;
+    }
 }
 
 declare module "next-auth/jwt" {
-  interface JWT {
-    id: string;
-    role: string;
-  }
+    interface JWT {
+        id: string;
+        role: string;
+    }
 }
 
 // Razorpay types
 declare global {
-  interface Window {
-    Razorpay: any;
-  }
+    interface Window {
+        Razorpay: any;
+    }
 }
