@@ -60,7 +60,6 @@ const AddNewProduct = () => {
                 const uploadResponse = await apiClient.post("/api/main-image", formData);
                 const uploadData = uploadResponse.data;
                 imageUrl = uploadData.imageUrl;
-                toast.success("Image uploaded successfully");
             }
 
             // Sanitize form data before sending to API
