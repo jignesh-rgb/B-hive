@@ -13,9 +13,8 @@ export const CartModule = () => {
   const { products, removeFromCart, calculateTotals, total } =
     useProductStore();
 
-  const handleRemoveItem = (id: string) => {
-    removeFromCart(id);
-    calculateTotals();
+  const handleRemoveItem = async (id: string) => {
+    await removeFromCart(id);
     toast.success("Product removed from the cart");
   };
   return (

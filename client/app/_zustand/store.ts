@@ -1,5 +1,7 @@
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
+import { getSession } from "next-auth/react";
+import { cartApi } from "@/lib/cart-api";
 
 export type ProductInCart = {
     id: string;
@@ -13,56 +15,219 @@ export type State = {
     products: ProductInCart[];
     allQuantity: number;
     total: number;
+    isAuthenticated: boolean;
+    isLoading: boolean;
 };
 
 export type Actions = {
-    addToCart: (newProduct: ProductInCart) => void;
-    removeFromCart: (id: string) => void;
-    updateCartAmount: (id: string, quantity: number) => void;
+    addToCart: (newProduct: ProductInCart) => Promise<void>;
+    removeFromCart: (id: string) => Promise<void>;
+    updateCartAmount: (id: string, quantity: number) => Promise<void>;
     calculateTotals: () => void;
-    clearCart: () => void;
+    clearCart: () => Promise<void>;
+    loadUserCart: () => Promise<void>;
+    setAuthenticated: (auth: boolean) => void;
+    initializeAuth: () => Promise<void>;
+    handleLogin: () => Promise<void>;
 };
 
 export const useProductStore = create<State & Actions>()(
     persist(
-        (set) => ({
+        (set, get) => ({
             products: [],
             allQuantity: 0,
             total: 0,
-            addToCart: (newProduct) => {
-                set((state) => {
-                    const cartItem = state.products.find(
-                        (item) => item.id === newProduct.id
-                    );
-                    if (!cartItem) {
-                        return { products: [...state.products, newProduct] };
-                    } else {
-                        state.products.map((product) => {
-                            if (product.id === cartItem.id) {
-                                product.amount += newProduct.amount;
-                            }
-                        });
-                    }
-                    return { products: [...state.products] };
-                });
-            },
-            clearCart: () => {
-                set((state: any) => {
+            isAuthenticated: false,
+            isLoading: false,
 
-                    return {
-                        products: [],
-                        allQuantity: 0,
-                        total: 0,
-                    };
-                });
+            initializeAuth: async () => {
+                try {
+                    const session = await getSession();
+                    const isAuth = !!session?.user;
+                    set({ isAuthenticated: isAuth });
+
+                    if (isAuth) {
+                        // Load cart from backend
+                        await get().loadUserCart();
+                    } else {
+                        // Load from localStorage (handled by persist)
+                        get().calculateTotals();
+                    }
+                } catch (error) {
+                    console.error('Error initializing auth:', error);
+                    set({ isAuthenticated: false });
+                    get().calculateTotals();
+                }
             },
-            removeFromCart: (id) => {
+
+            setAuthenticated: (isAuth) => {
+                set({ isAuthenticated: isAuth });
+                if (!isAuth) {
+                    // Clear cart on logout
+                    set({ products: [], allQuantity: 0, total: 0 });
+                } else {
+                    // On login, optionally merge guest cart
+                    get().handleLogin();
+                }
+            },
+
+            handleLogin: async () => {
+                try {
+                    const session = await getSession();
+                    if (!session?.user) return;
+
+                    // Check if there's a guest cart
+                    const guestCart = get().products;
+                    if (guestCart.length > 0) {
+                        // Merge guest cart with user cart
+                        for (const item of guestCart) {
+                            try {
+                                await cartApi.addToCart((session.user as any).id, item.id, item.amount);
+                            } catch (error) {
+                                // Item might already exist, try updating
+                                try {
+                                    // Get current quantity
+                                    const userCart = await cartApi.getUserCart((session.user as any).id);
+                                    const existingItem = userCart.products.find(p => p.id === item.id);
+                                    const newQuantity = (existingItem?.amount || 0) + item.amount;
+                                    await cartApi.updateCartItem((session.user as any).id, item.id, newQuantity);
+                                } catch (updateError) {
+                                    console.error('Error merging cart item:', updateError);
+                                }
+                            }
+                        }
+                        // Clear guest cart after merge
+                        set({ products: [], allQuantity: 0, total: 0 });
+                    }
+                    // Load merged cart
+                    await get().loadUserCart();
+                } catch (error) {
+                    console.error('Error handling login:', error);
+                }
+            },
+
+            loadUserCart: async () => {
+                const { isAuthenticated } = get();
+                if (!isAuthenticated) return;
+
+                set({ isLoading: true });
+                try {
+                    const session = await getSession();
+                    if (!session?.user) return;
+                    const cartData = await cartApi.getUserCart((session.user as any).id);
+                    set({
+                        products: cartData.products,
+                        allQuantity: cartData.allQuantity,
+                        total: cartData.total,
+                        isLoading: false
+                    });
+                } catch (error) {
+                    console.error('Error loading user cart:', error);
+                    set({ isLoading: false });
+                    // Fall back to local storage
+                    get().calculateTotals();
+                }
+            },
+
+            addToCart: async (newProduct) => {
+                const { isAuthenticated, products } = get();
+
+                if (isAuthenticated) {
+                    // Sync with backend
+                    try {
+                        const session = await getSession();
+                        if (session?.user) {
+                            await cartApi.addToCart((session.user as any).id, newProduct.id, newProduct.amount);
+                            // Reload cart from backend
+                            await get().loadUserCart();
+                        }
+                    } catch (error) {
+                        console.error('Error adding to cart:', error);
+                        // Fall back to local state
+                        set((state) => {
+                            const cartItem = state.products.find(
+                                (item) => item.id === newProduct.id
+                            );
+                            if (!cartItem) {
+                                return { products: [...state.products, newProduct] };
+                            } else {
+                                state.products.map((product) => {
+                                    if (product.id === cartItem.id) {
+                                        product.amount += newProduct.amount;
+                                    }
+                                });
+                            }
+                            return { products: [...state.products] };
+                        });
+                        get().calculateTotals();
+                    }
+                } else {
+                    // Local storage only
+                    set((state) => {
+                        const cartItem = state.products.find(
+                            (item) => item.id === newProduct.id
+                        );
+                        if (!cartItem) {
+                            return { products: [...state.products, newProduct] };
+                        } else {
+                            state.products.map((product) => {
+                                if (product.id === cartItem.id) {
+                                    product.amount += newProduct.amount;
+                                }
+                            });
+                        }
+                        return { products: [...state.products] };
+                    });
+                    get().calculateTotals();
+                }
+            },
+
+            clearCart: async () => {
+                const { isAuthenticated } = get();
+
+                if (isAuthenticated) {
+                    try {
+                        const session = await getSession();
+                        if (session?.user) {
+                            await cartApi.clearCart((session.user as any).id);
+                        }
+                    } catch (error) {
+                        console.error('Error clearing cart:', error);
+                    }
+                }
+
+                set((state: any) => ({
+                    products: [],
+                    allQuantity: 0,
+                    total: 0,
+                }));
+            },
+
+            removeFromCart: async (id) => {
+                const { isAuthenticated } = get();
+
+                if (isAuthenticated) {
+                    try {
+                        const session = await getSession();
+                        if (session?.user) {
+                            await cartApi.removeFromCart((session.user as any).id, id);
+                            // Reload cart
+                            await get().loadUserCart();
+                            return;
+                        }
+                    } catch (error) {
+                        console.error('Error removing from cart:', error);
+                    }
+                }
+
+                // Fallback to local
                 set((state) => {
                     state.products = state.products.filter(
                         (product: ProductInCart) => product.id !== id
                     );
                     return { products: state.products };
                 });
+                get().calculateTotals();
             },
 
             calculateTotals: () => {
@@ -81,7 +246,25 @@ export const useProductStore = create<State & Actions>()(
                     };
                 });
             },
-            updateCartAmount: (id, amount) => {
+
+            updateCartAmount: async (id, amount) => {
+                const { isAuthenticated } = get();
+
+                if (isAuthenticated) {
+                    try {
+                        const session = await getSession();
+                        if (session?.user) {
+                            await cartApi.updateCartItem((session.user as any).id, id, amount);
+                            // Reload cart
+                            await get().loadUserCart();
+                            return;
+                        }
+                    } catch (error) {
+                        console.error('Error updating cart:', error);
+                    }
+                }
+
+                // Fallback to local
                 set((state) => {
                     const cartItem = state.products.find((item) => item.id === id);
 
@@ -97,11 +280,33 @@ export const useProductStore = create<State & Actions>()(
 
                     return { products: [...state.products] };
                 });
+                get().calculateTotals();
             },
         }),
         {
-            name: "products-storage", // name of the item in the storage (must be unique)
-            storage: createJSONStorage(() => sessionStorage), // (optional) by default, 'localStorage' is used
+            name: "cart-storage",
+            storage: createJSONStorage(() => ({
+                getItem: (name: string) => {
+                    return localStorage.getItem(name);
+                },
+                setItem: (name: string, value: string) => {
+                    // Don't save to storage when authenticated
+                    const state = JSON.parse(value);
+                    if (!state.isAuthenticated) {
+                        localStorage.setItem(name, value);
+                    }
+                },
+                removeItem: (name: string) => {
+                    localStorage.removeItem(name);
+                },
+            })),
+            // Only persist certain fields
+            partialize: (state) => ({
+                products: state.products,
+                allQuantity: state.allQuantity,
+                total: state.total,
+                isAuthenticated: state.isAuthenticated,
+            }),
         }
     )
 );

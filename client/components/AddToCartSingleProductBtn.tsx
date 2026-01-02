@@ -19,17 +19,16 @@ import toast from "react-hot-toast";
 
 
 const AddToCartSingleProductBtn = ({ product, quantityCount }: SingleProductBtnProps) => {
-    const { addToCart, calculateTotals } = useProductStore();
+    const { addToCart } = useProductStore();
 
-    const handleAddToCart = () => {
-        addToCart({
+    const handleAddToCart = async () => {
+        await addToCart({
             id: product?._id.toString(),
             title: product?.title,
             price: product?.price,
             image: getImageSrc(product?.mainImage),
             amount: quantityCount
         });
-        calculateTotals();
         toast.success("Product added to the cart");
     };
     return (

@@ -27,6 +27,7 @@ model Product {
   category       Category                 @relation(fields: [categoryId], references: [id], onDelete: Cascade)
   customerOrders customer_order_product[]
   Wishlist       Wishlist[]
+  Cart           Cart[]
 
   merchantId     String
   merchant       Merchant @relation(fields: [merchantId], references: [id])
@@ -46,6 +47,7 @@ model User {
   password      String?
   role          String?        @default("user")
   Wishlist      Wishlist[]
+  Cart          Cart[]
   notifications Notification[]
   // Back relation for bulk upload batches
   bulkUploadBatches bulk_upload_batch[] @relation("UserBatches")
@@ -91,6 +93,18 @@ model Wishlist {
   productId String
   user      User    @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId    String
+}
+
+model Cart {
+  id        String  @id @default(uuid())
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  productId String
+  user      User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String
+  quantity  Int     @default(1)
+  addedAt   DateTime @default(now())
+
+  @@unique([userId, productId])
 }
 
 enum NotificationType {

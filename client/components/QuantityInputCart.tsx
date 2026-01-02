@@ -18,17 +18,13 @@ const QuantityInputCart = ({ product } : { product: ProductInCart }) => {
   const [quantityCount, setQuantityCount] = useState<number>(product.amount);
   const { updateCartAmount, calculateTotals } = useProductStore();
 
-  const handleQuantityChange = (actionName: string): void => {
+  const handleQuantityChange = async (actionName: string): Promise<void> => {
     if (actionName === "plus") {
       setQuantityCount(() => quantityCount + 1);
-      updateCartAmount(product.id, quantityCount + 1);
-      calculateTotals();
-
-      
+      await updateCartAmount(product.id, quantityCount + 1);
     } else if (actionName === "minus" && quantityCount !== 1) {
       setQuantityCount(() => quantityCount - 1);
-      updateCartAmount(product.id, quantityCount - 1);
-      calculateTotals();
+      await updateCartAmount(product.id, quantityCount - 1);
     }
   };
 
