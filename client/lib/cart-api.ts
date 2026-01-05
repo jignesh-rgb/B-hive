@@ -29,6 +29,7 @@ export const cartApi = {
      * Add item to user's cart
      */
     async addToCart(userId: string, productId: string, quantity: number = 1): Promise<any> {
+        console.log('Adding to cart:', { userId, productId, quantity });
         const session = await getSession();
         const token = (session as any)?.apiToken;
 

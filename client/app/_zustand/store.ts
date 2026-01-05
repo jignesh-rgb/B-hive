@@ -17,6 +17,7 @@ export type State = {
     total: number;
     isAuthenticated: boolean;
     isLoading: boolean;
+    guestCartMerged: boolean;
 };
 
 export type Actions = {
@@ -39,6 +40,7 @@ export const useProductStore = create<State & Actions>()(
             total: 0,
             isAuthenticated: false,
             isLoading: false,
+            guestCartMerged: false,
 
             initializeAuth: async () => {
                 try {
@@ -64,7 +66,13 @@ export const useProductStore = create<State & Actions>()(
                 set({ isAuthenticated: isAuth });
                 if (!isAuth) {
                     // Clear cart on logout
-                    set({ products: [], allQuantity: 0, total: 0 });
+                    set({
+                        products: [],
+                        allQuantity: 0,
+                        total: 0,
+                        guestCartMerged: false,
+                    });
+
                 } else {
                     // On login, optionally merge guest cart
                     get().handleLogin();
@@ -76,35 +84,56 @@ export const useProductStore = create<State & Actions>()(
                     const session = await getSession();
                     if (!session?.user) return;
 
-                    // Check if there's a guest cart
-                    const guestCart = get().products;
+                    const userId = (session.user as any).id;
+
+                    const {
+                        products: guestCart,
+                        guestCartMerged,
+                        loadUserCart,
+                    } = get();
+
+                    // 🚨 IMPORTANT: Prevent double merge
+                    if (guestCartMerged) {
+                        await loadUserCart();
+                        return;
+                    }
+
                     if (guestCart.length > 0) {
-                        // Merge guest cart with user cart
+                        // Load user cart ONCE
+                        const userCart = await cartApi.getUserCart(userId);
+
                         for (const item of guestCart) {
-                            try {
-                                await cartApi.addToCart((session.user as any).id, item.id, item.amount);
-                            } catch (error) {
-                                // Item might already exist, try updating
-                                try {
-                                    // Get current quantity
-                                    const userCart = await cartApi.getUserCart((session.user as any).id);
-                                    const existingItem = userCart.products.find(p => p.id === item.id);
-                                    const newQuantity = (existingItem?.amount || 0) + item.amount;
-                                    await cartApi.updateCartItem((session.user as any).id, item.id, newQuantity);
-                                } catch (updateError) {
-                                    console.error('Error merging cart item:', updateError);
-                                }
+                            const existingItem = userCart.products.find(
+                                (p: any) => p.id === item.id
+                            );
+
+                            if (existingItem) {
+                                // Update quantity
+                                const newQuantity = existingItem.amount + item.amount;
+                                await cartApi.updateCartItem(userId, item.id, newQuantity);
+                            } else {
+                                // Add new item
+                                await cartApi.addToCart(userId, item.id, item.amount);
                             }
                         }
-                        // Clear guest cart after merge
-                        set({ products: [], allQuantity: 0, total: 0 });
+
+                        // ✅ Clear guest cart & mark merged
+                        set({
+                            products: [],
+                            allQuantity: 0,
+                            total: 0,
+                            guestCartMerged: true,
+                        });
                     }
-                    // Load merged cart
-                    await get().loadUserCart();
+
+                    // Load final merged cart
+                    await loadUserCart();
+
                 } catch (error) {
                     console.error('Error handling login:', error);
                 }
             },
+
 
             loadUserCart: async () => {
                 const { isAuthenticated } = get();
@@ -306,6 +335,7 @@ export const useProductStore = create<State & Actions>()(
                 allQuantity: state.allQuantity,
                 total: state.total,
                 isAuthenticated: state.isAuthenticated,
+                guestCartMerged: state.guestCartMerged,
             }),
         }
     )

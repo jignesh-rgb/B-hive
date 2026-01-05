@@ -15,17 +15,17 @@ import { FaCartShopping } from 'react-icons/fa6'
 import { useProductStore } from "@/app/_zustand/store";
 
 const CartElement = () => {
-    const { allQuantity } = useProductStore();
-  return (
-    <div className="relative">
-            <Link href="/cart">
-              <FaCartShopping className="text-2xl text-slate-700 hover:text-[#457B9D] transition" />
-              <span className="block w-6 h-6 bg-[#A8DADC] text-slate-800 rounded-full flex justify-center items-center absolute top-[-17px] right-[-22px] font-medium">
-                { allQuantity }
-              </span>
-            </Link>
-          </div>
-  )
+	const { allQuantity } = useProductStore();
+	return (
+		<div className="relative">
+			<Link href="/cart">
+				<FaCartShopping className="text-2xl text-slate-700 hover:text-[#457B9D] transition" />
+				<span className="block w-6 h-6 bg-[#A8DADC] text-slate-800 rounded-full flex justify-center items-center absolute top-[-17px] right-[-22px] font-medium">
+					{allQuantity}
+				</span>
+			</Link>
+		</div>
+	)
 }
 
 export default CartElement
