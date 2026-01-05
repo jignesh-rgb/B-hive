@@ -10,8 +10,6 @@ const {
   getAllCategories,
 } = require("../controllers/category");
 
-console.log('Category routes loaded');
-
 router.route("/").get((req, res, next) => {
   console.log('Categories GET route called');
   getAllCategories(req, res, next);

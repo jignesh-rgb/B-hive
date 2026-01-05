@@ -1,5 +1,6 @@
 const express = require('express');
 const router = express.Router();
+const { authenticateToken } = require('../middleware/auth');
 
 const {
   getUserCart,
@@ -8,6 +9,9 @@ const {
   removeFromCart,
   clearCart
 } = require('../controllers/cart');
+
+// All cart routes require authentication
+router.use(authenticateToken);
 
 // Get user's cart
 router.get('/:userId', getUserCart);

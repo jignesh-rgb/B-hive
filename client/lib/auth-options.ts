@@ -2,6 +2,7 @@ import NextAuth from "next-auth/next";
 import CredentialsProvider from "next-auth/providers/credentials";
 import GoogleProvider from "next-auth/providers/google";
 import bcrypt from "bcryptjs";
+import jwt from "jsonwebtoken";
 import User from "@/models/User";
 import "@/utils/db";
 
@@ -101,6 +102,12 @@ export const authOptions = {
             if (token) {
                 session.user.role = token.role as string;
                 session.user.id = token.id as string;
+                // Create a separate JWT token for API calls that can be decoded by the backend
+                session.apiToken = jwt.sign(
+                    { id: token.id, role: token.role, email: token.email },
+                    process.env.NEXTAUTH_SECRET!,
+                    { expiresIn: '15m', algorithm: 'HS256' }
+                );
             }
             return session;
         },
