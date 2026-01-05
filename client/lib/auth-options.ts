@@ -41,8 +41,8 @@ export const authOptions = {
             },
         }),
         GoogleProvider({
-          clientId: process.env.GOOGLE_CLIENT_ID!,
-          clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+            clientId: process.env.GOOGLE_CLIENT_ID!,
+            clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
         }),
     ],
     callbacks: {
@@ -81,21 +81,16 @@ export const authOptions = {
         },
         async jwt({ token, user }: { token: any; user: any }) {
             if (user) {
-                token.role = user.role;
-                token.id = user.id;
-                token.iat = Math.floor(Date.now() / 1000); // Issued at time
+                token.iat = Math.floor(Date.now() / 1000);
             }
+            if (user?.email) {
+                const dbUser = await User.findOne({ email: user.email });
 
-            // Check if token is expired (15 minutes)
-            // const now = Math.floor(Date.now() / 1000);
-            // const tokenAge = now - (token.iat as number);
-            // const maxAge = 15 * 60; // 15 minutes
-
-            // if (tokenAge > maxAge) {
-            //     // Token expired, return empty object to force re-authentication
-            //     return {};
-            // }
-
+                if (dbUser) {
+                    token.id = dbUser._id.toString();
+                    token.role = dbUser.role;
+                }
+            }
             return token;
         },
         async session({ session, token }: { session: any; token: any }) {

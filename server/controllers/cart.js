@@ -5,12 +5,6 @@ const { asyncHandler, AppError } = require('../utills/errorHandler');
 // Get user's cart
 const getUserCart = asyncHandler(async (req, res) => {
   const { userId } = req.params;
-  console.log('Fetching cart for user:', userId);
-
-  // Verify user can only access their own cart
-  if (req.user.id !== userId) {
-    throw new AppError('Unauthorized access to cart', 403);
-  }
 
   const cartItems = await Cart.find({ userId })
     .populate('productId', 'title price mainImage slug')
@@ -40,11 +34,6 @@ const getUserCart = asyncHandler(async (req, res) => {
 const addToCart = asyncHandler(async (req, res) => {
   const { userId } = req.params;
   const { productId, quantity = 1 } = req.body;
-
-  // Verify user can only modify their own cart
-  if (req.user.id !== userId) {
-    throw new AppError('Unauthorized access to cart', 403);
-  }
 
   // Check if product exists
   const product = await Product.findById(productId);
@@ -82,11 +71,6 @@ const updateCartItem = asyncHandler(async (req, res) => {
   const { userId, productId } = req.params;
   const { quantity } = req.body;
 
-  // Verify user can only modify their own cart
-  if (req.user.id !== userId) {
-    throw new AppError('Unauthorized access to cart', 403);
-  }
-
   if (quantity < 1) {
     throw new AppError('Quantity must be at least 1', 400);
   }
@@ -113,11 +97,6 @@ const updateCartItem = asyncHandler(async (req, res) => {
 const removeFromCart = asyncHandler(async (req, res) => {
   const { userId, productId } = req.params;
 
-  // Verify user can only modify their own cart
-  if (req.user.id !== userId) {
-    throw new AppError('Unauthorized access to cart', 403);
-  }
-
   const cartItem = await Cart.findOneAndDelete({ userId, productId });
 
   if (!cartItem) {
@@ -132,11 +111,6 @@ const removeFromCart = asyncHandler(async (req, res) => {
 // Clear user's cart
 const clearCart = asyncHandler(async (req, res) => {
   const { userId } = req.params;
-
-  // Verify user can only modify their own cart
-  if (req.user.id !== userId) {
-    throw new AppError('Unauthorized access to cart', 403);
-  }
 
   await Cart.deleteMany({ userId });
 
